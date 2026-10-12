@@ -1,6 +1,6 @@
 /* Merges one SapaLine week into the site state (in place) and returns a report.
    payload is what the "JUZ40 · SapaLine" bookmarklet (and the weekly task) produce:
-   { subject: 'math' | 'geometry', line: 'smart', period: '3-АЙ 4-АПТА',
+   { subject: 'physics', line: 'smart', period: '3-АЙ 4-АПТА',
      rows: [{ date, time, teacher, potok, agym, like, att, survey: { liked, avg, disliked, present, total } }] }
    Per teacher + stream the week's survey counts are summed over every lesson that has a survey;
    the page then shows like% = liked / (liked + avg + disliked).
@@ -34,13 +34,15 @@ function mergeSapa(state, payload, opts) {
 
   if (!payload || typeof payload !== 'object' || !Array.isArray(payload.rows)) fail('Бұл SapaLine деректеріне ұқсамайды: «rows» тізімі жоқ.');
   if (!payload.rows.length || payload.rows.length > 10000) fail('Сабақтар тізімі бос немесе тым үлкен.');
+  // The site has one subject: physics. Another subject's page (maths, geometry, …) is refused, so its numbers
+  // can never land among the physics teachers.
   var subj = norm(payload.subject);
-  var subject = /^(geo|geom|geometry|геометрия)$/.test(subj) ? 'geo' : /^(math|mat|matematika|математика)$/.test(subj) ? 'math' : null;
-  if (!subject) {
-    var codes = payload.rows.map(function (r) { return norm(r && r.agym); }).join(' ');
-    subject = /геом/.test(codes) ? 'geo' : /мат/.test(codes) ? 'math' : null;
-  }
-  if (!subject) fail('Пән анықталмады: SapaLine-да Математика немесе Геометрия бетін ашып көшіріңіз.');
+  var codes = payload.rows.map(function (r) { return norm(r && r.agym); }).join(' ');
+  var subject = /^(phys|physics|fiz|fizika|физика)$/.test(subj) || /phys|fiz|физ/.test(subj) ? 'phys' : null;
+  if (!subject && !subj && /физ/.test(codes)) subject = 'phys';
+  if (!subject) fail(subj || /мат|геом/.test(codes)
+    ? 'Бұл физика деректері емес' + (subj ? ' (' + subj + ')' : '') + '. SapaLine-да Live Sabaq → Физика бетін ашып, қайта көшіріңіз.'
+    : 'Пән анықталмады: SapaLine-да Live Sabaq → Физика бетін ашып көшіріңіз.');
   var pm = /^\s*(\d+)\s*[-–—]\s*АЙ\s*(\d+)\s*[-–—]\s*АПТА\s*$/i.exec(String(payload.period || ''));
   if (!pm) fail('Апта анықталмады: кезең «3-АЙ 4-АПТА» түрінде болуы керек.');
   var monN = +pm[1], weekN = +pm[2];

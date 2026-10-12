@@ -1,4 +1,4 @@
-/* "JUZ40 · SapaLine" bookmarklet. Runs on a SapaLine "Live Sabaq" page (e.g. /live-sabaq/smart/math),
+/* "JUZ40 · SapaLine" bookmarklet. Runs on a SapaLine "Live Sabaq" page (e.g. /live-sabaq/smart/physics),
    reads every lesson of the week shown (table layout on a wide screen, cards on a narrow one), opens each
    lesson's survey from the "Ұнау %" cell, reads Ұнады / Орташа / Ұнамады and closes it again.
    It never types anything into SapaLine. The result is JSON for the admin panel's import window.
@@ -10,11 +10,11 @@
   var BOX = 'juz40-sapa-box';
   var old = D.getElementById(BOX); if (old) { old.remove(); }
   var box = D.createElement('div'); box.id = BOX;
-  box.setAttribute('style', 'position:fixed;z-index:2147483647;top:16px;right:16px;width:380px;max-width:calc(100vw - 32px);max-height:calc(100vh - 32px);overflow:auto;box-sizing:border-box;background:#0d1a52;color:#e8f0ff;font:14px/1.45 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.45);padding:16px;text-align:left;pointer-events:auto!important;isolation:isolate');
+  box.setAttribute('style', 'position:fixed;z-index:2147483647;top:16px;right:16px;width:380px;max-width:calc(100vw - 32px);max-height:calc(100vh - 32px);overflow:auto;box-sizing:border-box;background:#2a0f33;color:#f8ecfc;font:14px/1.45 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.45);padding:16px;text-align:left;pointer-events:auto!important;isolation:isolate');
   D.body.appendChild(box);
   var stop = false, json = '';
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
-  var btn = function (x, label, main) { return '<button type="button" data-x="' + x + '" style="pointer-events:auto!important;cursor:pointer;border:0;border-radius:999px;padding:9px 15px;margin:12px 8px 0 0;font-family:inherit;font-size:13px;font-weight:700;' + (main ? 'background:#93c2ff;color:#0d1a52' : 'background:rgba(232,240,255,.12);color:#e8f0ff') + '">' + label + '</button>'; };
+  var btn = function (x, label, main) { return '<button type="button" data-x="' + x + '" style="pointer-events:auto!important;cursor:pointer;border:0;border-radius:999px;padding:9px 15px;margin:12px 8px 0 0;font-family:inherit;font-size:13px;font-weight:700;' + (main ? 'background:#e2b8ef;color:#2a0f33' : 'background:rgba(248,236,252,.12);color:#f8ecfc') + '">' + label + '</button>'; };
   var show = function (html, buttons) { box.innerHTML = '<div style="font-weight:800;letter-spacing:.03em;margin-bottom:8px">JUZ40 · SapaLine</div><div>' + html + '</div><div>' + (buttons || '') + '</div>'; };
   var notice = function (text) { var el = box.querySelector('[data-copy-status]'); if (el) { el.textContent = text; } };
   var selectJSON = function () {
@@ -63,12 +63,17 @@
   }, true);
 
   if (!/(^|\.)sapaline\.app$/.test(location.hostname) || !/^\/live-sabaq\//.test(location.pathname)) {
-    show('Бұл батырма SapaLine-дағы <b>Live Sabaq</b> бетінде жұмыс істейді. Математика немесе Геометрия бетін ашып, аптаны таңдап, қайта басыңыз.', btn('close', 'Жабу'));
+    show('Бұл батырма SapaLine-дағы <b>Live Sabaq</b> бетінде жұмыс істейді. Физика бетін ашып, аптаны таңдап, қайта басыңыз.', btn('close', 'Жабу'));
     return;
   }
   var seg = location.pathname.split('/').filter(Boolean);
   var line = seg[1] || 'smart', subjRaw = (seg[2] || '').toLowerCase();
-  var subject = /geo/.test(subjRaw) ? 'geometry' : /math/.test(subjRaw) ? 'math' : subjRaw;
+  var subject = /phy|fiz|физ/.test(subjRaw) ? 'physics' : /geo/.test(subjRaw) ? 'geometry' : /math/.test(subjRaw) ? 'math' : subjRaw;
+  if (subject !== 'physics' && subject !== 'math' && subject !== 'geometry' && /Физика/.test(D.body.innerText || '')) { subject = 'physics'; }
+  if (subject !== 'physics') {
+    show('Бұл бет физика емес' + (subjRaw ? ' (<b>' + esc(subjRaw) + '</b>)' : '') + '. SapaLine-да <b>Live Sabaq → Физика</b> бетін ашып, аптаны таңдап, қайта басыңыз.', btn('close', 'Жабу'));
+    return;
+  }
   var periodPattern = /(\d+)\s*[-–—]\s*АЙ\s*(\d+)\s*[-–—]\s*АПТА/i;
   var pm = periodPattern.exec(D.body.innerText || '');
   if (!pm) {
@@ -175,13 +180,13 @@
   var errors = rows.filter(function (r) { return r.survey && r.survey.err; });
   var attendance = rows.filter(function (r) { return /\d/.test(r.att || '') || r.survey && /\d/.test(r.survey.present || '') && /\d/.test(r.survey.total || ''); }).length;
   var miss = rows.filter(function (r) { return !(r.survey && !r.survey.err); });
-  var subjName = subject === 'geometry' ? 'Геометрия' : subject === 'math' ? 'Математика' : subject;
+  var subjName = subject === 'physics' ? 'Физика' : subject === 'geometry' ? 'Геометрия' : subject === 'math' ? 'Математика' : subject;
   show('<b>' + esc(subjName) + ' · ' + esc(period) + '</b><br>' + rows.length + ' сабақ, сауалнамасы бар: <b>' + withS + '</b>' +
     '<br>Қатысым дерегі бар: <b>' + attendance + '</b>' +
     (errors.length ? '<br><b>Оқылмаған сауалнама: ' + errors.length + '. Қайта көшіріңіз — импорт бұл деректерді қабылдамайды.</b>' : '') +
     (miss.length ? '<br><span style="opacity:.75">Сауалнамасыз: ' + esc(miss.slice(0, 6).map(function (r) { return r.date + ' ' + r.teacher; }).join('; ')) + (miss.length > 6 ? ' …' : '') + '</span>' : '') +
     '<br><br>«Көшіру» басыңыз немесе JSON файлын жүктеп, JUZ40 әкімші панеліндегі <b>SapaLine-нан импорттау</b> терезесіне қойыңыз немесе файлды ашыңыз.' +
-    '<textarea id="juz40-json" readonly style="display:block;width:100%;box-sizing:border-box;height:72px;margin-top:10px;border-radius:10px;border:1px solid rgba(232,240,255,.25);background:rgba(0,0,0,.25);color:#e8f0ff;font:11px/1.35 ui-monospace,Menlo,monospace;padding:8px;pointer-events:auto!important;user-select:text!important">' + esc(json) + '</textarea>',
+    '<textarea id="juz40-json" readonly style="display:block;width:100%;box-sizing:border-box;height:72px;margin-top:10px;border-radius:10px;border:1px solid rgba(248,236,252,.25);background:rgba(0,0,0,.25);color:#f8ecfc;font:11px/1.35 ui-monospace,Menlo,monospace;padding:8px;pointer-events:auto!important;user-select:text!important">' + esc(json) + '</textarea>',
     '<p data-copy-status role="status" aria-live="polite" style="font-size:12px;line-height:1.5;margin:10px 0 0"></p>' +
     btn('copy', 'Көшіру', true) + btn('select', 'Мәтінді белгілеу') + btn('download', 'JSON жүктеу') + btn('close', 'Жабу'));
 })();

@@ -12,7 +12,7 @@ function emblem(file) {
   const svg = rd(file);
   return { vb: svg.match(/viewBox="([^"]+)"/)[1], d: svg.match(/ d="([^"]+)"/)[1] };
 }
-const EMBLEM = { geo: emblem('src/emblems/geometry.svg'), math: emblem('src/emblems/math.svg'), juz40: emblem('src/emblems/juz40.svg') };
+const EMBLEM = { phys: emblem('src/emblems/physics.svg'), juz40: emblem('src/emblems/juz40.svg') };
 
 // "JUZ40 · SapaLine" bookmarklet: comments and indentation stripped, then made into a javascript: URL
 function bookmarkletURL(src) {
@@ -47,10 +47,10 @@ const html = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>JUZ40 Мат-Гео кері байланыс</title>
-<meta name="description" content="JUZ40 · Математика және геометрия мұғалімдеріне LIVE сабақ бойынша апталық кері байланыс">
+<title>JUZ40 Физика кері байланыс</title>
+<meta name="description" content="JUZ40 · Физика мұғалімдеріне LIVE сабақ бойынша апталық кері байланыс">
 <meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#1b36b0">
+<meta name="theme-color" content="#863e98">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/fonts/JUZ40-Bold.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

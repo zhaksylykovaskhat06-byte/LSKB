@@ -1,8 +1,8 @@
 {
-  "name": "juz40-matgeo-feedback",
+  "name": "juz40-physics-feedback",
   "version": "1.0.0",
   "private": true,
-  "description": "JUZ40 · Математика және геометрия мұғалімдеріне LIVE сабақ бойынша апталық кері байланыс сайты",
+  "description": "JUZ40 · Физика мұғалімдеріне LIVE сабақ бойынша апталық кері байланыс сайты",
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",

@@ -49,10 +49,9 @@ function logoSVG(cls, w, h) {
 var LOGO = logoSVG('', 71, 22);
 
 var SUBJ = {
-  math: { hash: ['math', 'matematika', 'mat'], glyphs: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '−', '×', '÷', '=', '≠', '≤', '≥', '√', '∑', 'π', '∞', '∫', 'x', 'y', 'f', 'log', 'sin', 'cos', '%', '²', '³', 'Δ', 'λ', 'ⁿ', '½'] },
-  geo: { hash: ['geometry', 'geometriya', 'geo', 'geom'], glyphs: ['△', '∠', '⊥', '∥', '○', '°', 'π', 'R', 'r', 'S', 'a', 'b', 'c', 'h', 'α', 'β', 'γ', '≅', '∼', '⌒', '◇', '□', 'sin', 'cos', 'tg', '½', '√', '90°', '60°', '45°', '30°', 'AB', 'CD'] }
+  phys: { hash: ['physics', 'fizika', 'phys', 'fiz'], glyphs: ['F', 'm', 'a', 'v', 't', 's', 'g', 'E', 'p', 'P', 'A', 'Q', 'U', 'I', 'R', 'λ', 'ν', 'ω', 'φ', 'ρ', 'η', 'μ', 'ε', 'Δ', 'Ω', 'τ', '℃', 'K', 'Н', 'Дж', 'Вт', 'Па', 'В', 'Гц', '=', '·', '²', '½', '→', 'mc²', 'ma', 'mgh', 'IR', 'ħ', '∑'] }
 };
-var SUBJ_KEYS = ['math', 'geo'];
+var SUBJ_KEYS = ['phys'];
 function emblemSVG(k, cls) { var E = EMBLEM[k]; return '<svg class="' + (cls || '') + '" viewBox="' + E.vb + '" aria-hidden="true"><path d="' + E.d + '"/></svg>'; }
 function heroEmblem(k) {
   var E = EMBLEM[k];
@@ -108,7 +107,7 @@ function initialSubject() {
   var h = (location.hash || '').replace('#', '').toLowerCase();
   for (var i = 0; i < SUBJ_KEYS.length; i++) if (SUBJ[SUBJ_KEYS[i]].hash.indexOf(h) >= 0) return SUBJ_KEYS[i];
   var s = store.get('juz.subject');
-  return SUBJ[s] ? s : 'math';
+  return SUBJ[s] ? s : 'phys';
 }
 function previewDrafts() { return !!draft; }
 function pickWeek(subject, prefer) {
@@ -132,7 +131,7 @@ function renderHeader() {
     return '<button class="subjBtn" type="button" data-subj="' + k + '" aria-pressed="' + (k === view.subject) + '">' + emblemSVG(k) +
       '<span class="full">' + esc(S.name) + '</span><span class="short">' + esc(S.short) + '</span></button>';
   }).join('');
-  nav.appendChild(adminBtnEl); // the admin entry sits right after Geometry (hidden for visitors)
+  nav.appendChild(adminBtnEl); // the admin entry sits right after the subject (hidden for visitors)
   var ws = visibleWeeks(d, view.subject, previewDrafts());
   var box = $('#weeks');
   box.innerHTML = (ws.length ? '<span class="weeksLabel">Апта</span>' : '') + ws.map(function (x) {
@@ -340,7 +339,7 @@ var resizeT = 0;
 window.addEventListener('resize', function () { clearTimeout(resizeT); resizeT = setTimeout(function () { layout(); update(); rainResize(); }, 120); });
 
 /* ================= glyph rain ================= */
-var rain = { cv: $('#rain'), ctx: null, cols: [], glyphs: SUBJ.math.glyphs, w: 0, h: 0, dpr: 1, last: 0, color: null, run: false };
+var rain = { cv: $('#rain'), ctx: null, cols: [], glyphs: SUBJ.phys.glyphs, w: 0, h: 0, dpr: 1, last: 0, color: null, run: false };
 function rainResize() {
   var cv = rain.cv; if (!cv || !cv.getContext) return;
   rain.dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -717,7 +716,7 @@ function tabTeachers() {
 
 function tabStreams() {
   var d = draft;
-  return '<div class="aCard"><div class="aRow" style="justify-content:space-between"><p class="aHint" style="margin:0">Поток коды бөлім тақырыбында мұғалімнің атының алдында тұрады: «МАТ-21 | Дәулет ағай». Атауы тек осы панельде көрінеді.</p>' +
+  return '<div class="aCard"><div class="aRow" style="justify-content:space-between"><p class="aHint" style="margin:0">Поток коды бөлім тақырыбында мұғалімнің атының алдында тұрады: «ФИЗ-11 | Асхат ағай». Атауы тек осы панельде көрінеді.</p>' +
     '<button class="aBtn" type="button" data-act="stream-add">+ Поток қосу</button></div>' +
     (d.streams.length ? '<div class="aTableWrap" style="margin-top:12px"><table class="aTable"><thead><tr><th>Код</th><th>Атауы</th><th>Қолданылуы</th><th></th></tr></thead><tbody>' +
       d.streams.map(function (s) {
@@ -845,7 +844,7 @@ function onAdminClick(ev) {
       return;
     case 'asg-add': {
       var m = byId(d.months, admin.monthId); if (!m) return;
-      m.assignments.push({ id: uid('a'), teacherId: '', subject: 'math', streamId: '', line: 'SMART' });
+      m.assignments.push({ id: uid('a'), teacherId: '', subject: 'phys', streamId: '', line: 'SMART' });
       afterStructural(); return;
     }
     case 'asg-copy': {
@@ -883,7 +882,7 @@ function onAdminClick(ev) {
       return;
     }
     case 'photo-del': delete draftPhotos[id]; photosDirty = true; afterStructural(); return;
-    case 'stream-add': d.streams.push({ id: uid('s'), code: 'МАТ-', name: '' }); afterStructural(); return;
+    case 'stream-add': d.streams.push({ id: uid('s'), code: 'ФИЗ-', name: '' }); afterStructural(); return;
     case 'stream-del': {
       var st = byId(d.streams, id); if (!st) return;
       confirmBox(st.code + ' өшірілсін бе?', 'Бұл поток бекітілген жолдарда «—» болып қалады.', 'Өшіру', true).then(function (ok) {
@@ -939,7 +938,7 @@ function importBox() {
   var m = $('#modal');
   modalResolve = null;
   m.innerHTML = '<div class="modalBox wide" role="dialog" aria-modal="true" aria-labelledby="imT"><h4 id="imT">SapaLine-нан импорттау</h4>' +
-    '<ol class="imSteps"><li>SapaLine-да <b>Live Sabaq</b> → Математика немесе Геометрия бетін ашып, керек аптаны таңдаңыз.</li>' +
+    '<ol class="imSteps"><li>SapaLine-да <b>Live Sabaq</b> → Физика бетін ашып, керек аптаны таңдаңыз.</li>' +
     '<li>Бетбелгілер жолағындағы <b>JUZ40 · SapaLine</b> батырмасын басыңыз. Сабақтар оқылып болған соң <b>Көшіру</b> немесе <b>JSON жүктеу</b> басыңыз. Бұрынғы бетбелгіні осы терезедегі жаңа нұсқамен ауыстырыңыз.</li>' +
     '<li>Төмендегі өріске қойып (⌘V / Ctrl+V) немесе жүктелген JSON файлды ашып, <b>Импорттау</b> басыңыз. Сандарды тексеріп, «Сақтау және жариялау» басасыз.</li></ol>' +
     '<div class="imBm"><a class="bmLink" href="' + esc(BOOKMARKLET) + '" title="Бетбелгілер жолағына сүйреп апарыңыз">' + emblemSVG(view.subject) + 'JUZ40 · SapaLine</a>' +
@@ -1182,7 +1181,7 @@ function resumeAfterSave() {
    The task reads SapaLine in the owner's browser, then opens /admin#juz=<data> from the SapaLine tab, so the
    numbers travel inside the browser and are never retyped. Everything below needs the admin to be logged in:
    saving goes through the same PUT /api/data (cookie) as the «Сақтау» button.
-   #juz= payload: { v: 1, items: [{ subject: 'math'|'geometry', line: 'smart'|'junior', period: '3-АЙ 4-АПТА',
+   #juz= payload: { v: 1, items: [{ subject: 'physics', line: 'smart'|'junior', period: '3-АЙ 4-АПТА',
      rows: [[date, time, teacher, agym, liked, avg, disliked]] (liked..disliked null when the lesson has no survey),
      expect: { liked, avg, disliked, lessons } (sums over the rows that have a survey, counted on the SapaLine side) }] } */
 var autoPending = null, autoItems = null;

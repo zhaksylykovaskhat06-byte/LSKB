@@ -14,7 +14,7 @@ const PASSWORD = 'test-' + crypto.randomBytes(9).toString('base64url'); // a thr
 const JPEG = Buffer.from('/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=', 'base64');
 
 async function start(port, extra) {
-  const env = { ...process.env, PORT: String(port), ADMIN_PASSWORD: PASSWORD, ADMIN_PASSWORD_HASH: '', SESSION_SECRET: '', VERCEL: '', BLOB_STORE_ID: '', BLOB_READ_WRITE_TOKEN: '', ...extra };
+  const env = { ...process.env, PORT: String(port), ADMIN_PASSWORD: PASSWORD, ADMIN_PASSWORD_HASH: '', SESSION_SECRET: '', VERCEL: '', BLOB_STORE_ID: '', BLOB_READ_WRITE_TOKEN: '', JUZ_SEED_FILE: path.join(ROOT, 'test', 'fixture-seed.json'), ...extra };
   const child = spawn(process.execPath, ['scripts/dev-server.mjs'], { cwd: ROOT, env, stdio: ['ignore', 'pipe', 'pipe'] });
   let log = '';
   child.stdout.on('data', (d) => (log += d));
@@ -43,7 +43,6 @@ async function suite(label, port, extra, checkStore) {
       assert.equal(r.status, 200, p);
       assert.match(await r.text(), /HOST_MODE = "server"/, p);
     }
-    assert.equal((await fetch(base + '/photos/t_beket.jpg')).headers.get('content-type'), 'image/jpeg');
 
     // visitor view: only weeks switched on
     let r = await call('GET', '/api/data');
@@ -85,7 +84,7 @@ async function suite(label, port, extra, checkStore) {
     const metricWeek = Object.keys(edited.results).find(w => pubWeeks.some(x => x.id === w));
     const metricId = Object.keys(edited.results[metricWeek])[0];
     Object.assign(edited.results[metricWeek][metricId], { present: 45, total: 60, attendancePct: 75, attendanceLessons: 2, attendanceMode: 'weighted' });
-    edited.teachers.find(t => t.id === 't_kuanysh').display = 'Қуаныш ағай';
+    edited.teachers.find(t => t.id === 't_two').display = 'Тест апай';
     assert.equal((await call('PUT', '/api/data', { body: { state: edited, photos: full.photos, baseRev: rev0 } })).status, 401, 'no cookie');
     assert.equal((await call('PUT', '/api/data', { cookie, body: { state: edited, photos: full.photos, baseRev: rev0 }, headers: { Origin: 'https://evil.example' } })).status, 403, 'cross-site');
     assert.equal((await call('PUT', '/api/data', { cookie, body: { state: edited, photos: full.photos, baseRev: rev0 + 5 }, headers: origin })).status, 409, 'wrong base');
@@ -95,30 +94,31 @@ async function suite(label, port, extra, checkStore) {
     const metric = (await call('GET', '/api/data')).body.state.results[metricWeek][metricId];
     assert.equal(metric.present, 45); assert.equal(metric.total, 60); assert.equal(metric.attendancePct, 75);
     assert.equal(metric.attendanceLessons, 2); assert.equal(metric.attendanceMode, 'weighted');
-    assert.equal(r.body.state.teachers.find(t => t.id === 't_kuanysh').display, 'Нұрдәулет ағай');
+    assert.equal(r.body.state.teachers.find(t => t.id === 't_two').display, 'Тест апай');
+    assert.ok(r.body.state.months.every(m => m.assignments.every(a => a.subject === 'phys')), 'only physics');
     assert.equal((await call('GET', '/api/data')).body.state.outro.title, 'Тест: ' + label, 'visitors see the save');
     assert.equal((await call('PUT', '/api/data', { cookie, body: { state: edited, photos: full.photos, baseRev: rev0 }, headers: origin })).status, 409, 'stale save refused');
     const pub = (await call('GET', '/api/data')).body;
     assert.equal((await call('PUT', '/api/data', { cookie, body: { state: pub.state, photos: pub.photos, baseRev: rev0 + 1 }, headers: origin })).status, 400, 'visitor copy cannot be saved');
-    assert.equal((await call('PUT', '/api/data', { cookie, body: { state: edited, photos: { t_beket: 'data:image/jpeg;base64,AAAA' }, baseRev: rev0 + 1 }, headers: origin })).status, 400, 'inline photo refused');
+    assert.equal((await call('PUT', '/api/data', { cookie, body: { state: edited, photos: { t_one: 'data:image/jpeg;base64,AAAA' }, baseRev: rev0 + 1 }, headers: origin })).status, 400, 'inline photo refused');
     const broken = await fetch(base + '/api/data', { method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: cookie, ...origin }, body: '{broken' });
     assert.equal(broken.status, 400, 'broken json');
 
     // photos
-    assert.equal((await call('POST', '/api/photo', { body: { teacherId: 't_beket', dataUrl: 'data:image/jpeg;base64,' + JPEG.toString('base64') }, headers: origin })).status, 401);
-    assert.equal((await call('POST', '/api/photo', { cookie, body: { teacherId: 't_beket', dataUrl: 'data:image/jpeg;base64,' + Buffer.from('not a jpeg').toString('base64') }, headers: origin })).status, 400);
-    r = await call('POST', '/api/photo', { cookie, body: { teacherId: 't_beket', dataUrl: 'data:image/jpeg;base64,' + JPEG.toString('base64') }, headers: origin });
+    assert.equal((await call('POST', '/api/photo', { body: { teacherId: 't_one', dataUrl: 'data:image/jpeg;base64,' + JPEG.toString('base64') }, headers: origin })).status, 401);
+    assert.equal((await call('POST', '/api/photo', { cookie, body: { teacherId: 't_one', dataUrl: 'data:image/jpeg;base64,' + Buffer.from('not a jpeg').toString('base64') }, headers: origin })).status, 400);
+    r = await call('POST', '/api/photo', { cookie, body: { teacherId: 't_one', dataUrl: 'data:image/jpeg;base64,' + JPEG.toString('base64') }, headers: origin });
     assert.equal(r.status, 200);
-    assert.match(r.body.url, /^\/api\/photo\?p=photos\/t_beket-[a-z0-9]+\.jpg$/);
+    assert.match(r.body.url, /^\/api\/photo\?p=photos\/t_one-[a-z0-9]+\.jpg$/);
     const img = await fetch(base + r.body.url);
     assert.equal(img.status, 200);
     assert.equal(img.headers.get('content-type'), 'image/jpeg');
     assert.ok(Buffer.from(await img.arrayBuffer()).equals(JPEG));
     assert.equal((await fetch(base + '/api/photo?p=data/site.json')).status, 404, 'only photos are served');
     const latest = (await call('GET', '/api/data', { cookie })).body;
-    r = await call('PUT', '/api/data', { cookie, body: { state: latest.state, photos: { ...latest.photos, t_beket: r.body.url }, baseRev: latest.state.rev }, headers: origin });
+    r = await call('PUT', '/api/data', { cookie, body: { state: latest.state, photos: { ...latest.photos, t_one: r.body.url }, baseRev: latest.state.rev }, headers: origin });
     assert.equal(r.status, 200);
-    assert.match((await call('GET', '/api/data')).body.photos.t_beket, /^\/api\/photo\?p=photos\//);
+    assert.match((await call('GET', '/api/data')).body.photos.t_one, /^\/api\/photo\?p=photos\//);
 
     // two saves at the same moment: one wins, the other is told to reload
     const now = (await call('GET', '/api/data', { cookie })).body;
@@ -185,7 +185,7 @@ try {
     const names = fs.readdirSync(blobDir).map(decodeURIComponent);
     assert.ok(names.includes('data/site.json'));
     assert.ok(names.some((n) => n.startsWith('data/history/') && n.endsWith('.json')));
-    assert.ok(names.some((n) => /^photos\/t_beket-.*\.jpg$/.test(n)));
+    assert.ok(names.some((n) => /^photos\/t_one-.*\.jpg$/.test(n)));
   });
   // the password stored only as a scrypt hash (as the built-in one is), sessions signed with a key kept in the store
   const salt = crypto.randomBytes(16);

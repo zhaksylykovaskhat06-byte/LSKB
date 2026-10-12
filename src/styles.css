@@ -11,21 +11,14 @@
   --rail:clamp(0px,calc((100vw - 900px) * 999),54px);
   color-scheme:dark;
 }
-/* Subject palettes. d-* = dark panels, l-* = light panels. Maths uses its blues as given;
-   geometry's #00998A is mid-dark, so text on it is white and a soft veil deepens the text side. */
-:root,[data-subj="math"]{
-  --d-bg:#1b36b0; --d-fg:#c9e1ff; --d-acc:#93c2ff; --d-acctext:#93c2ff; --d-chip:#1b36b0;
-  --l-bg:#c9e1ff; --l-fg:#1b36b0; --l-acc:#1b36b0; --l-chip:#c9e1ff;
-  --glow:#93c2ff; --amb-d:color-mix(in oklab,#93c2ff 18%,transparent); --amb-l:color-mix(in oklab,#93c2ff 72%,transparent); --veil:#0000;
-  --shadow:#06113f; --frost:#f3f8ff; --z1:#f6faff; --z2:#c9e1ff; --z3:#86b4ff; --zdepth:#4a72d8;
-  --a-fg:#e8f0ff; --a-acc:#93c2ff; --a-ink:#0d1a52; --deep:#0d1a52;
-}
-[data-subj="geo"]{
-  --d-bg:#00998a; --d-fg:#ffffff; --d-acc:#c3fcf2; --d-acctext:#ffffff; --d-chip:#005a51;
-  --l-bg:#c3fcf2; --l-fg:#005a51; --l-acc:#00998a; --l-chip:#c3fcf2;
-  --glow:#59d0bf; --amb-d:color-mix(in oklab,#c3fcf2 14%,transparent); --amb-l:color-mix(in oklab,#59d0bf 46%,transparent); --veil:color-mix(in oklab,#00302a 36%,transparent);
-  --shadow:#00302a; --frost:#effffb; --z1:#f5fffd; --z2:#c3fcf2; --z3:#59d0bf; --zdepth:#00776b;
-  --a-fg:#e3fff9; --a-acc:#59d0bf; --a-ink:#032e29; --deep:#032e29;
+/* Subject palette. d-* = dark panels, l-* = light panels. Physics is #863E98 — a mid-dark violet, so text on it
+   is white and a soft veil deepens the text side; the light panels are a pale lilac with the violet as ink. */
+:root,[data-subj="phys"]{
+  --d-bg:#863e98; --d-fg:#ffffff; --d-acc:#f3dcfa; --d-acctext:#ffffff; --d-chip:#4a1d57;
+  --l-bg:#f3e4f8; --l-fg:#5e2470; --l-acc:#863e98; --l-chip:#f3e4f8;
+  --glow:#d9a6ea; --amb-d:color-mix(in oklab,#f3dcfa 14%,transparent); --amb-l:color-mix(in oklab,#d9a6ea 46%,transparent); --veil:color-mix(in oklab,#2c0f36 36%,transparent);
+  --shadow:#2c0f36; --frost:#fcf4ff; --z1:#fef9ff; --z2:#f3dcfa; --z3:#d9a6ea; --zdepth:#6a2a7c;
+  --a-fg:#f9eefd; --a-acc:#d9a6ea; --a-ink:#2c0f36; --deep:#2c0f36;
 }
 /* legacy names used by the rules below resolve to the active subject's dark panel */
 :root,[data-subj]{--teal:var(--d-bg);--ice:var(--d-fg);--cyan:var(--d-acc);--abyss:var(--shadow)}
@@ -188,8 +181,8 @@ button{font:inherit;color:inherit}
 .photoEmpty b{position:relative;font-family:var(--font-display);font-size:clamp(48px,7vw,84px);letter-spacing:-.04em;color:var(--accc)}
 .photoEmpty span{position:relative;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:color-mix(in oklab,var(--fgc) 55%,transparent)}
 
-[data-subj="geo"] .act[data-theme="dark"] :is(.pctCap,.voteLabel,.meta,.analysis,.pill.ghost,.outroEyebrow,.outroText,.outroStat,.footText,.emptyNote,.lede,.cueText){color:var(--fgc)}
-[data-subj="geo"] .act[data-theme="dark"] .pill.ghost{border-color:color-mix(in oklab,var(--d-acc) 60%,transparent)}
+[data-subj="phys"] .act[data-theme="dark"] :is(.pctCap,.voteLabel,.meta,.analysis,.pill.ghost,.outroEyebrow,.outroText,.outroStat,.footText,.emptyNote,.lede,.cueText){color:var(--fgc)}
+[data-subj="phys"] .act[data-theme="dark"] .pill.ghost{border-color:color-mix(in oklab,var(--d-acc) 60%,transparent)}
 /* ---------- intro ---------- */
 .act.intro .flow{display:flex;flex-direction:column;justify-content:flex-end;gap:8px;z-index:1;padding-bottom:clamp(56px,9vh,96px)}
 .introRing{position:absolute;top:50%;right:-4%;width:62vw;height:62vw;max-width:900px;max-height:900px;border-radius:999px;border:1px solid color-mix(in oklab,var(--cyan) 16%,transparent);transform:translateY(-50%) scale(calc(.72 + var(--a) * .28));opacity:calc(var(--a) * .9);-webkit-mask-image:linear-gradient(#0000,#000 28% 72%,#0000);mask-image:linear-gradient(#0000,#000 28% 72%,#0000)}
