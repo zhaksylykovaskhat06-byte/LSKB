@@ -402,8 +402,8 @@ const SHUFFLE_OPTIONS = true;
 const PREFIX = 'juz40live-v1-';
 /* Бөлме атауы: оқушылар осы бөлмеге кодсыз кіреді. Басқа сайттармен қатар келмес үшін бірегей болсын */
 const ROOM_BASE = 'juz40-physics-askhat';
-/* Бөлмелер саны: 1-куратор … 30-куратор. Сілтеме: ?room=7 */
-const ROOM_COUNT = 30;
+/* Бөлмелер саны: 1-куратор … 40-куратор. Сілтеме: ?room=7 */
+const ROOM_COUNT = 40;
 function readRoom(){
   const n = parseInt(new URLSearchParams(location.search).get('room'), 10);
   return (n>=1 && n<=ROOM_COUNT) ? n : null;
