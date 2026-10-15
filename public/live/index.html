@@ -52,6 +52,9 @@ input{font:inherit}
 .home-card{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:22px;padding:28px;text-align:left}
 .home-card h2{margin:0 0 6px;font-size:22px}
 .home-card p{margin:0 0 20px;color:var(--muted);font-weight:500;line-height:1.45}
+.pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;width:100%;max-width:900px;margin-top:26px}
+.pick-grid button{background:rgba(255,255,255,.07);border:1px solid var(--line);color:#fff;border-radius:14px;padding:16px 10px;font-weight:800;font-size:17px}
+.pick-grid button:hover{background:var(--accent2)}
 .hero{font-size:clamp(34px,6vw,60px);font-weight:900;margin:8px 0 0;line-height:1.05}
 
 /* host lobby */
@@ -155,22 +158,12 @@ input{font:inherit}
 
 <div class="status" id="status"></div>
 
-<!-- ============ БАСТЫ БЕТ ============ -->
+<!-- ============ БӨЛМЕ ТАҢДАУ ============ -->
 <section class="view center" id="v-home">
   <div class="brand">JUZ40 <b>Live</b></div>
-  <h1 class="hero">Бірге жарысатын<br>live-викторина</h1>
-  <div class="home-grid">
-    <div class="home-card">
-      <h2>Мұғалім</h2>
-      <p>Ойын бөлмесін ашыңыз: код пен QR шығады, оқушылар қосылады.</p>
-      <button class="btn" id="btn-host">Ойын ашу</button>
-    </div>
-    <div class="home-card">
-      <h2>Оқушы</h2>
-      <p>Мұғалім берген 6 таңбалы кодпен кір.</p>
-      <button class="btn light" id="btn-student">Кодпен кіру</button>
-    </div>
-  </div>
+  <h1 class="hero" id="pick-title" style="font-size:clamp(26px,5vw,44px)">Бөлмеңді таңда</h1>
+  <p class="muted" id="pick-sub" style="font-weight:600;margin:10px 0 0">Куратор нөмірін бас</p>
+  <div class="pick-grid" id="pick-grid"></div>
 </section>
 
 <!-- ============ МҰҒАЛІМ: КҮТУ БӨЛМЕСІ ============ -->
@@ -184,6 +177,7 @@ input{font:inherit}
   </div>
   <div class="lobby">
     <div class="panel join-box">
+      <div class="site" id="h-room" style="font-size:clamp(28px,3vw,44px)"></div>
       <div class="muted" style="font-weight:700">Телефоннан ашып, атыңды жаз</div>
       <div class="site" id="h-code"></div>
       <div class="qr" id="h-qr"></div>
@@ -245,7 +239,8 @@ input{font:inherit}
 <!-- ============ ОҚУШЫ: КІРУ ============ -->
 <section class="view center" id="v-sjoin">
   <div class="s-wrap center" style="justify-content:center">
-    <div class="brand" style="margin-bottom:26px">JUZ40 <b>Live</b></div>
+    <div class="brand" style="margin-bottom:8px">JUZ40 <b>Live</b></div>
+    <div id="s-room" style="font-weight:800;font-size:22px;margin-bottom:22px"></div>
     <input class="field" id="s-name" maxlength="20" placeholder="Аты-жөнің" autocomplete="off">
     <button class="btn" id="btn-join" style="width:100%;margin-top:14px">Кіру</button>
     <div class="err" id="s-err"></div>
@@ -406,7 +401,16 @@ const SHUFFLE_OPTIONS = true;
 /* ===================================================================== */
 const PREFIX = 'juz40live-v1-';
 /* Бөлме атауы: оқушылар осы бөлмеге кодсыз кіреді. Басқа сайттармен қатар келмес үшін бірегей болсын */
-const ROOM = 'juz40-physics-askhat';
+const ROOM_BASE = 'juz40-physics-askhat';
+/* Бөлмелер саны: 1-куратор … 30-куратор. Сілтеме: ?room=7 */
+const ROOM_COUNT = 30;
+function readRoom(){
+  const n = parseInt(new URLSearchParams(location.search).get('room'), 10);
+  return (n>=1 && n<=ROOM_COUNT) ? n : null;
+}
+const ROOM_N = readRoom();
+const ROOM = ROOM_BASE + '-' + ROOM_N;
+function roomLabel(n){ return n + '-куратор'; }
 const SHAPES = ['▲','◆','●','■'];
 const $ = s => document.querySelector(s);
 
@@ -467,13 +471,13 @@ function shuffleOptions(){
 }
 function hostStart(){
   if (SHUFFLE_OPTIONS) shuffleOptions();
-  history.replaceState(null, '', location.pathname + '#teacher');
+  history.replaceState(null, '', location.pathname + location.search + '#teacher');
   show('v-lobby');
   $('#h-qinfo').textContent = QUESTIONS.length + ' сұрақ';
   openHostPeer();
   window.addEventListener('beforeunload', e => { if (H.players.size && H.phase!=='final'){ e.preventDefault(); e.returnValue=''; } });
 }
-function joinUrl(){ return location.origin + location.pathname; }
+function joinUrl(){ return location.origin + location.pathname + '?room=' + ROOM_N; }
 
 function openHostPeer(attempt){
   attempt = attempt||0;
@@ -576,7 +580,8 @@ function computeRanks(){
 
 /* --- экрандар --- */
 function renderLobby(){
-  $('#h-code').textContent = (location.host + location.pathname).replace(/\/(index\.html)?$/,'');
+  $('#h-room').textContent = roomLabel(ROOM_N);
+  $('#h-code').textContent = '';
   $('#h-link').textContent = joinUrl();
   const qr = $('#h-qr'); qr.innerHTML = '';
   try { new QRCode(qr, { text:joinUrl(), width:220, height:220, colorDark:'#17142f', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.M }); }
@@ -727,9 +732,10 @@ function studentInit(){
     if (!S.id){ S.id = Math.random().toString(36).slice(2) + Date.now().toString(36); sessionStorage.setItem('jl-id', S.id); }
   } catch(_){ S.id = Math.random().toString(36).slice(2); }
   show('v-sjoin');
+  $('#s-room').textContent = roomLabel(ROOM_N);
   const ni = $('#s-name');
   let savedName='', inGame='';
-  try { savedName = sessionStorage.getItem('jl-name')||''; inGame = sessionStorage.getItem('jl-in')||''; } catch(_){}
+  try { savedName = sessionStorage.getItem('jl-name')||''; inGame = sessionStorage.getItem('jl-in-'+ROOM_N)||''; } catch(_){}
   ni.value = savedName;
   ni.focus();
   // бет жаңартылса — ойынға автоматты қайта кіру
@@ -791,7 +797,7 @@ function sMsg(d){
     case 'joined':
       clearTimeout(S.joinTimer);
       S.joined = true; S.retries = 0; S.name = d.name; status('');
-      try { sessionStorage.setItem('jl-name', S.name); sessionStorage.setItem('jl-in', '1'); } catch(_){}
+      try { sessionStorage.setItem('jl-name', S.name); sessionStorage.setItem('jl-in-'+ROOM_N, '1'); } catch(_){}
       $('#btn-join').disabled = false; $('#btn-join').textContent = 'Кіру'; $('#s-err').textContent = '';
       $('#sw-name').textContent = S.name;
       break;
@@ -809,7 +815,7 @@ function sMsg(d){
     case 'final': renderSFin(d); break;
     case 'kicked':
       S.kicked = true; S.joined = false;
-      try { sessionStorage.removeItem('jl-in'); } catch(_){}
+      try { sessionStorage.removeItem('jl-in-'+ROOM_N); } catch(_){}
       joinError('Мұғалім сені ойыннан шығарды'); break;
   }
 }
@@ -881,22 +887,30 @@ function renderSFin(d){
 }
 
 /* =========================== ІСКЕ ҚОСУ ============================== */
-$('#btn-host').onclick = hostStart;
-$('#btn-student').onclick = () => studentInit();
 $('#to-teacher').onclick = e => { e.preventDefault(); clearTimeout(S.retryT); try{ S.peer && S.peer.destroy(); }catch(_){} hostStart(); };
 $('#btn-join').onclick = sJoin;
 $('#s-name').addEventListener('keydown', e => { if (e.key==='Enter') sJoin(); });
 $('#btn-start').onclick = () => startQuestion(0);
 $('#btn-skip').onclick = () => endQuestion();
 $('#btn-next').onclick = () => H.qi < QUESTIONS.length-1 ? startQuestion(H.qi+1) : finish();
-$('#btn-new').onclick = () => { H.players.clear(); location.replace(location.pathname + '#teacher'); location.reload(); };
+$('#btn-new').onclick = () => { H.players.clear(); location.reload(); };
 $('#btn-test').onclick = () => window.open(joinUrl(), '_blank');
 $('#btn-fs').onclick = () => { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(()=>{}); };
 
+function showPicker(teacher){
+  $('#pick-title').textContent = teacher ? 'Мұғалім: бөлмеңізді таңдаңыз' : 'Бөлмеңді таңда';
+  $('#pick-sub').textContent = teacher ? 'Ойын осы бөлмеде ашылады, оқушылар оның сілтемесімен кіреді' : 'Куратор нөмірін бас';
+  const g = $('#pick-grid'); g.innerHTML = '';
+  for (let n=1; n<=ROOM_COUNT; n++){
+    g.append(h('button',{onclick:()=>{ location.href = location.pathname + '?room=' + n + (teacher?'#teacher':''); }}, roomLabel(n)));
+  }
+  show('v-home');
+}
 (function boot(){
   if (typeof Peer==='undefined'){ status('Кітапхана жүктелмеді. Интернетті тексеріп, бетті жаңартыңыз'); return; }
-  if (location.hash==='#teacher' || location.hash==='#host') hostStart();
-  else studentInit();
+  const teacher = location.hash==='#teacher' || location.hash==='#host';
+  if (!ROOM_N){ showPicker(teacher); return; }
+  if (teacher) hostStart(); else studentInit();
 })();
 </script>
 </body>
