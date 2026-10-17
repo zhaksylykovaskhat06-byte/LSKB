@@ -158,6 +158,7 @@ input{font:inherit}
 <body>
 
 <div class="status" id="status"></div>
+<div id="stuck" style="display:none;position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:40;text-align:center"><button onclick="location.reload()" style="background:#fff;color:#17142f;font:800 15px Montserrat,system-ui,sans-serif;border:0;border-radius:12px;padding:12px 18px;box-shadow:0 6px 20px #0006">Қатып қалды ма? Жаңарту ↻</button></div>
 <div id="netbadge" style="position:fixed;right:10px;bottom:8px;font:600 11px Montserrat,system-ui,sans-serif;color:#ffb3b5;opacity:.85;z-index:30"></div>
 
 <!-- ============ БӨЛМЕ ТАҢДАУ ============ -->
@@ -422,7 +423,7 @@ const BROKERS = [
   { url:'wss://broker.hivemq.com:8884/mqtt' },
   { url:'wss://test.mosquitto.org:8081/mqtt' },
 ];
-const NET_VER = 'v3';
+const NET_VER = 'v4';
 const TB = 'juz40live/v1/' + ROOM;
 const NET = { clients:[], seen:new Map(), started:false };
 function rid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
@@ -438,7 +439,7 @@ function netStart(topics, onMsg, onState){
   netBadge();
   BROKERS.forEach(b => {
     let c;
-    try { c = mqtt.connect(b.url, Object.assign({ clientId:'j40_'+rid().slice(0,16), clean:true, keepalive:30, reconnectPeriod:3000, connectTimeout:8000 },
+    try { c = mqtt.connect(b.url, Object.assign({ clientId:'j40_'+rid().slice(0,16), clean:true, keepalive:10, reconnectPeriod:1500, connectTimeout:6000 },
       b.username ? { username:b.username, password:b.password } : {})); }
     catch(_){ return; }
     c._up = false;
@@ -455,6 +456,22 @@ function netStart(topics, onMsg, onState){
     NET.clients.push(c);
   });
 }
+function netRevive(){
+  NET.clients.forEach(c => {
+    try { c._up = false; c.end(true); } catch(_){}
+    setTimeout(() => { try { c.reconnect(); } catch(_){} }, 150);
+  });
+  netBadge();
+}
+(function(){
+  let hiddenAt = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden){ hiddenAt = Date.now(); return; }
+    if (NET.started && hiddenAt && Date.now() - hiddenAt > 3000) netRevive();
+  });
+  window.addEventListener('online', () => { if (NET.started) netRevive(); });
+  window.addEventListener('pageshow', e => { if (e.persisted && NET.started) netRevive(); });
+})();
 function netSend(topic, obj){
   const str = JSON.stringify(Object.assign({ _m: rid() }, obj));
   NET.clients.forEach(c => { if (c._up){ try { c.publish(topic, str, { qos:1 }); } catch(_){} } });
@@ -583,7 +600,7 @@ function hostMsg(d){
   if (!p){ if (d.t==='ping') netSend(TB+'/d/'+id, {t:'gone'}); return; }
   p.seen = Date.now();
   if (!p.online){ p.online = true; refreshHost(); }
-  if (d.t==='ping'){ if (d.ph!==expectedPh(p)) sendPhase(p); return; }
+  if (d.t==='ping'){ if (d.ph!==expectedPh(p)) sendPhase(p); else sendTo(p, {t:'pong'}); return; }
   if (d.t==='answer'){
     if (H.phase!=='question' || d.qi!==H.qi) return;
     if (H.answers.has(p.id)){ sendTo(p, {t:'ack', qi:H.qi}); return; }
@@ -838,15 +855,22 @@ function ensureNet(){
 }
 function pingTick(){
   if (!S.joined || S.kicked || S.finished) return;
+  const quiet = Date.now() - (S.lastRx||Date.now());
+  if (quiet > 9000 && Date.now() - (S.revivedAt||0) > 9000){ S.revivedAt = Date.now(); netRevive(); }
+  const sl = document.getElementById('stuck');
+  if (sl) sl.style.display = quiet > 15000 ? 'block' : 'none';
   netSend(TB+'/up', { t:'ping', id:S.id, ph:S.ph });
   if (S.pending && S.ph==='q'+S.pending.qi) netSend(TB+'/up', { t:'answer', id:S.id, qi:S.pending.qi, value:S.pending.value });
 }
 function sMsg(d){
   if (!d || typeof d!=='object') return;
+  S.lastRx = Date.now();
+  const sl = document.getElementById('stuck'); if (sl) sl.style.display = 'none';
+  if (d.t==='pong') return;
   switch (d.t){
     case 'joined':
       clearInterval(S.joinLoop); S.joinLoop = null;
-      S.joined = true; S.name = d.name; status('');
+      S.joined = true; S.name = d.name; S.lastRx = Date.now(); status('');
       try { sessionStorage.setItem('jl3-name', S.name); sessionStorage.setItem('jl3-in-'+ROOM_N, '1'); } catch(_){}
       $('#btn-join').disabled = false; $('#btn-join').textContent = 'Кіру'; $('#s-err').textContent = '';
       $('#sw-name').textContent = S.name;
