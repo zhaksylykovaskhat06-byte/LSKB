@@ -7,7 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script>window.mqtt||document.write('<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"><\/script>')</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{
@@ -399,7 +400,6 @@ const QUESTIONS = [
 const SHUFFLE_OPTIONS = true;
 
 /* ===================================================================== */
-const PREFIX = 'juz40live-v1-';
 /* Бөлме атауы: оқушылар осы бөлмеге кодсыз кіреді. Басқа сайттармен қатар келмес үшін бірегей болсын */
 const ROOM_BASE = 'juz40-physics-askhat-c';
 /* Бөлмелер саны: 1-куратор … 9-куратор. Сілтеме: ?room=7 */
@@ -411,6 +411,38 @@ function readRoom(){
 const ROOM_N = readRoom();
 const ROOM = ROOM_BASE + '-' + ROOM_N;
 function roomLabel(n){ return n + '-куратор'; }
+
+/* ===== Байланыс: делдал сервер (MQTT) арқылы. Үш серверге қатар қосылады,
+   біреуі жұмыс істесе жетеді; қайталанған хабарлар сүзіледі ===== */
+const BROKERS = ['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt','wss://test.mosquitto.org:8081/mqtt'];
+const TB = 'juz40live/v1/' + ROOM;
+const NET = { clients:[], seen:new Map(), started:false };
+function rid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+function netUp(){ return NET.clients.some(c=>c._up); }
+function netStart(topics, onMsg, onState){
+  if (NET.started) return; NET.started = true;
+  BROKERS.forEach(url => {
+    let c;
+    try { c = mqtt.connect(url, { clientId:'j40_'+rid().slice(0,16), clean:true, keepalive:30, reconnectPeriod:2000, connectTimeout:8000 }); }
+    catch(_){ return; }
+    c._up = false;
+    const down = () => { if (c._up){ c._up = false; onState(netUp()); } };
+    c.on('connect', () => { c.subscribe(topics, { qos:1 }); c._up = true; onState(true); });
+    c.on('close', down); c.on('offline', down); c.on('error', ()=>{});
+    c.on('message', (t, buf) => {
+      let d; try { d = JSON.parse(String(buf)); } catch(_){ return; }
+      if (!d || typeof d!=='object' || typeof d._m!=='string' || NET.seen.has(d._m)) return;
+      NET.seen.set(d._m, 1);
+      if (NET.seen.size > 4000){ let k=0; for (const key of NET.seen.keys()){ NET.seen.delete(key); if (++k>2000) break; } }
+      onMsg(t, d);
+    });
+    NET.clients.push(c);
+  });
+}
+function netSend(topic, obj){
+  const str = JSON.stringify(Object.assign({ _m: rid() }, obj));
+  NET.clients.forEach(c => { if (c._up){ try { c.publish(topic, str, { qos:1 }); } catch(_){} } });
+}
 const SHAPES = ['▲','◆','●','■'];
 const $ = s => document.querySelector(s);
 
@@ -474,63 +506,71 @@ function hostStart(){
   history.replaceState(null, '', location.pathname + location.search + '#teacher');
   show('v-lobby');
   $('#h-qinfo').textContent = QUESTIONS.length + ' сұрақ';
-  openHostPeer();
+  openHostNet();
   window.addEventListener('beforeunload', e => { if (H.players.size && H.phase!=='final'){ e.preventDefault(); e.returnValue=''; } });
 }
 function joinUrl(){ return location.origin + location.pathname + '?room=' + ROOM_N; }
 
-function openHostPeer(attempt){
-  attempt = attempt||0;
+function openHostNet(){
   status('Серверге қосылуда…');
-  const p = new Peer(PREFIX + ROOM);
-  H.peer = p;
-  p.on('open', () => { status(''); renderLobby(); });
-  p.on('error', e => {
-    if (e.type==='unavailable-id'){
-      // бет жаңартылғанда бөлме бірнеше секунд бос емес болып тұруы мүмкін
-      p.destroy();
-      if (attempt < 12){ status('Бөлме босатылуын күтуде…'); setTimeout(()=>openHostPeer(attempt+1), 3000); }
-      else status('Ойын басқа терезеде ашық тұр. Сол терезені жауып, бетті жаңартыңыз');
+  H.hostId = rid(); H.since = Date.now(); H.dup = false;
+  renderLobby();
+  netStart([TB+'/up', TB+'/host'], (t, d) => {
+    if (t===TB+'/host'){
+      if (d.hid!==H.hostId && typeof d.since==='number' && d.since < H.since && !H.dup){
+        H.dup = true; status('Бұл бөлмеде басқа мұғалім ойын ашып отыр. Басқа бөлме таңдаңыз');
+      }
       return;
     }
-    if (e.type==='peer-unavailable') return;
-    status('Байланыс қатесі: ' + e.type + '. Интернетті тексеріңіз');
-  });
-  p.on('disconnected', () => { if (!p.destroyed) setTimeout(()=>{ try{ p.reconnect(); }catch(_){} }, 1500); });
-  p.on('connection', c => {
-    c.on('data', d => hostMsg(c, d));
-    c.on('close', () => hostClose(c));
-    c.on('error', () => hostClose(c));
-  });
+    hostMsg(d);
+  }, up => { if (!H.dup) status(up ? '' : 'Серверге қосылуда…'); });
+  setInterval(() => { netSend(TB+'/host', { hid:H.hostId, since:H.since }); hostSweep(); }, 3000);
 }
 
-function sendTo(p, msg){ if (p.conn && p.conn.open){ try{ p.conn.send(msg); }catch(_){} } }
+function sendTo(p, msg){ netSend(TB+'/d/'+p.id, msg); }
+function expectedPh(p){
+  if (H.phase==='lobby') return 'lobby';
+  if (H.phase==='question') return (H.answers.has(p.id) ? 'a' : 'q') + H.qi;
+  if (H.phase==='reveal') return 'r' + H.qi;
+  return 'f';
+}
+function hostSweep(){
+  const now = Date.now(); let changed = false;
+  for (const p of H.players.values()){
+    const on = now - p.seen < 12000;
+    if (on!==p.online){ p.online = on; changed = true; }
+  }
+  if (changed){ refreshHost(); if (H.phase==='question' && allAnswered()) endQuestion(); }
+}
 
-function hostMsg(c, d){
-  if (!d || typeof d!=='object') return;
+function hostMsg(d){
+  const id = String(d.id||'').slice(0,40);
+  if (!id) return;
   if (d.t==='join'){
-    const id = String(d.id||'').slice(0,40);
     const name = String(d.name||'').replace(/\s+/g,' ').trim().slice(0,20);
-    if (!id || !name){ c.send({t:'error', msg:'Атыңды жаз'}); return; }
+    if (!name){ netSend(TB+'/d/'+id, {t:'error', msg:'Атыңды жаз'}); return; }
     let p = H.players.get(id);
     if (!p){
       if ([...H.players.values()].some(x => x.name.toLowerCase()===name.toLowerCase())){
-        c.send({t:'error', msg:'Бұл ат бос емес, басқа ат жаз'}); return;
+        netSend(TB+'/d/'+id, {t:'error', msg:'Бұл ат бос емес, басқа ат жаз'}); return;
       }
-      p = { id, name, score:0, last:0, conn:null, online:true };
+      p = { id, name, score:0, last:0, online:true, seen:Date.now() };
       H.players.set(id, p);
     }
-    const old = p.conn;
-    p.conn = c; p.online = true; c.pid = id;
-    if (old && old!==c){ try{ old.close(); }catch(_){} }
-    c.send({t:'joined', name:p.name});
+    p.seen = Date.now(); p.online = true;
+    sendTo(p, {t:'joined', name:p.name});
     sendPhase(p);
     refreshHost();
     return;
   }
+  const p = H.players.get(id);
+  if (!p){ if (d.t==='ping') netSend(TB+'/d/'+id, {t:'gone'}); return; }
+  p.seen = Date.now();
+  if (!p.online){ p.online = true; refreshHost(); }
+  if (d.t==='ping'){ if (d.ph!==expectedPh(p)) sendPhase(p); return; }
   if (d.t==='answer'){
-    const p = H.players.get(c.pid);
-    if (!p || H.phase!=='question' || d.qi!==H.qi || H.answers.has(p.id)) return;
+    if (H.phase!=='question' || d.qi!==H.qi) return;
+    if (H.answers.has(p.id)){ sendTo(p, {t:'ack', qi:H.qi}); return; }
     const q = QUESTIONS[H.qi];
     const v = validate(q, d.value);
     if (v===undefined) return;
@@ -538,14 +578,10 @@ function hostMsg(c, d){
     const ok = check(q, v);
     const pts = ok ? Math.round(1000 * (1 - 0.5*Math.min(el, H.limit)/H.limit)) : 0;
     H.answers.set(p.id, { value:v, ok, pts, el });
-    sendTo(p, {t:'ack'});
+    sendTo(p, {t:'ack', qi:H.qi});
     refreshHost();
     if (allAnswered()) endQuestion();
   }
-}
-function hostClose(c){
-  const p = H.players.get(c.pid);
-  if (p && p.conn===c){ p.conn=null; p.online=false; refreshHost(); if (H.phase==='question' && allAnswered()) endQuestion(); }
 }
 function online(){ return [...H.players.values()].filter(p=>p.online); }
 function allAnswered(){ const o=online(); return o.length>0 && o.every(p=>H.answers.has(p.id)); }
@@ -558,7 +594,7 @@ function questionMsg(){
 }
 function resultMsg(p){
   const a = H.answers.get(p.id);
-  return { t:'result', answered:!!a, ok:!!(a&&a.ok), points:a?a.pts:0, score:p.score,
+  return { t:'result', qi:H.qi, answered:!!a, ok:!!(a&&a.ok), points:a?a.pts:0, score:p.score,
            rank:H.ranks.get(p.id)||H.players.size, count:H.players.size,
            correct:answerText(QUESTIONS[H.qi]), last:H.qi===QUESTIONS.length-1 };
 }
@@ -568,7 +604,7 @@ function finalMsg(p){
 }
 function sendPhase(p){
   if (H.phase==='lobby') sendTo(p, {t:'lobby'});
-  else if (H.phase==='question') sendTo(p, H.answers.has(p.id) ? {t:'ack'} : questionMsg());
+  else if (H.phase==='question') sendTo(p, H.answers.has(p.id) ? {t:'ack', qi:H.qi} : questionMsg());
   else if (H.phase==='reveal') sendTo(p, resultMsg(p));
   else if (H.phase==='final') sendTo(p, finalMsg(p));
 }
@@ -602,8 +638,7 @@ function renderChips(){
 function kick(p){
   if (!confirm(p.name + ' ойыннан шығарылсын ба?')) return;
   sendTo(p, {t:'kicked'});
-  const c = p.conn; H.players.delete(p.id);
-  setTimeout(()=>{ try{ c && c.close(); }catch(_){} }, 300);
+  H.players.delete(p.id);
   renderChips();
 }
 function refreshHost(){
@@ -723,8 +758,8 @@ function finish(){
 }
 
 /* =========================== ОҚУШЫ ============================== */
-const S = { peer:null, conn:null, id:null, name:'', code:'', joined:false, kicked:false, retries:0,
-            q:null, tick:null, joinTimer:null, finished:false };
+const S = { ph:'', pending:null, joinLoop:null, joinStart:0, net:false, id:null, name:'', code:'', joined:false, kicked:false, retries:0,
+            q:null, tick:null, finished:false };
 
 function studentInit(){
   try {
@@ -742,7 +777,7 @@ function studentInit(){
   if (savedName && inGame) sJoin();
 }
 function joinError(msg){
-  clearTimeout(S.joinTimer);
+  clearInterval(S.joinLoop); S.joinLoop = null;
   $('#btn-join').disabled = false; $('#btn-join').textContent = 'Кіру';
   $('#s-err').textContent = msg;
   show('v-sjoin');
@@ -751,68 +786,72 @@ function sJoin(){
   const name = $('#s-name').value.replace(/\s+/g,' ').trim();
   $('#s-err').textContent = '';
   if (!name){ joinError('Атыңды жаз'); return; }
-  S.name = name.slice(0,20); S.kicked = false; S.retries = 0;
+  S.name = name.slice(0,20); S.kicked = false; S.joined = false;
   $('#btn-join').disabled = true; $('#btn-join').textContent = 'Қосылуда…';
-  clearTimeout(S.joinTimer);
-  S.joinTimer = setTimeout(()=>{ if (!S.joined) joinError('Байланыс орнамады. Қайта байқап көр'); }, 15000);
-  connect();
+  ensureNet();
+  startJoinLoop();
 }
-function connect(){
-  try { S.peer && S.peer.destroy(); } catch(_){}
-  const p = new Peer(); S.peer = p;
-  p.on('open', () => {
-    const c = p.connect(PREFIX + ROOM, { reliable:true }); S.conn = c;
-    c.on('open', () => c.send({ t:'join', id:S.id, name:S.name }));
-    c.on('data', sMsg);
-    c.on('close', () => { if (S.conn===c) lost(); });
-    c.on('error', () => { if (S.conn===c) lost(); });
-  });
-  p.on('error', e => {
-    if (S.joined) { lost(); return; }
-    if (e.type==='peer-unavailable'){
-      // мұғалім ойынды әлі ашпаған: күтіп, өзі қайта байқайды
-      clearTimeout(S.joinTimer);
-      $('#s-err').textContent = 'Ойын әлі ашылмаған. Мұғалім ашқанда өзің кіресің…';
-      $('#btn-join').textContent = 'Күтуде…';
-      clearTimeout(S.retryT); S.retryT = setTimeout(connect, 3000);
-    }
-    else if (e.type==='browser-incompatible') joinError(window.top!==window.self
-      ? 'Бұл көшірме басқа сайттың ішінде ашылған, мұнда ойын жұмыс істемейді. Мұғалім берген негізгі сілтемені аш'
-      : 'Бұл браузер сәйкес келмейді. Сайтты Safari не Chrome-да аш');
-    else joinError('Интернет байланысын тексер (' + e.type + ')');
-  });
+function startJoinLoop(){
+  S.joinStart = Date.now();
+  sendJoin();
+  clearInterval(S.joinLoop); S.joinLoop = setInterval(joinTick, 2000);
 }
-function lost(){
-  if (S.kicked || S.finished || !S.joined) return;
-  S.conn = null;
-  status('Байланыс үзілді. Қайта қосылуда…');
-  if (S.retries >= 10){ status('Байланыс жоқ. Бетті жаңартып көр'); return; }
-  S.retries++;
-  clearTimeout(S.retryT);
-  S.retryT = setTimeout(connect, 1500);
+function sendJoin(){ netSend(TB+'/up', { t:'join', id:S.id, name:S.name }); }
+function joinTick(){
+  if (S.joined || S.kicked){ clearInterval(S.joinLoop); return; }
+  const el = Date.now() - S.joinStart;
+  if (!netUp()){
+    if (el > 10000) $('#s-err').textContent = 'Серверге қосыла алмай тұр. Интернетті тексер, өзі қайта байқап жатыр…';
+    return;
+  }
+  sendJoin();
+  if (el > 5000){
+    $('#s-err').textContent = 'Ойын әлі ашылмаған. Мұғалім ашқанда өзің кіресің…';
+    $('#btn-join').textContent = 'Күтуде…';
+  }
+}
+function ensureNet(){
+  if (S.net) return; S.net = true;
+  netStart([TB+'/d/'+S.id], (t, d) => sMsg(d), up => {
+    if (S.joined && !S.finished) status(up ? '' : 'Байланыс үзілді. Қайта қосылуда…');
+    if (!up) return;
+    if (S.joined) pingTick();
+    else if (S.name && !S.kicked && S.joinLoop) sendJoin();
+  });
+  setInterval(pingTick, 3000);
+}
+function pingTick(){
+  if (!S.joined || S.kicked || S.finished) return;
+  netSend(TB+'/up', { t:'ping', id:S.id, ph:S.ph });
+  if (S.pending && S.ph==='q'+S.pending.qi) netSend(TB+'/up', { t:'answer', id:S.id, qi:S.pending.qi, value:S.pending.value });
 }
 function sMsg(d){
   if (!d || typeof d!=='object') return;
   switch (d.t){
     case 'joined':
-      clearTimeout(S.joinTimer);
-      S.joined = true; S.retries = 0; S.name = d.name; status('');
+      clearInterval(S.joinLoop); S.joinLoop = null;
+      S.joined = true; S.name = d.name; status('');
       try { sessionStorage.setItem('jl3-name', S.name); sessionStorage.setItem('jl3-in-'+ROOM_N, '1'); } catch(_){}
       $('#btn-join').disabled = false; $('#btn-join').textContent = 'Кіру'; $('#s-err').textContent = '';
       $('#sw-name').textContent = S.name;
       break;
     case 'error':
       S.joined = false; joinError(d.msg); break;
+    case 'gone':
+      if (S.joined && !S.kicked && !S.finished){ S.joined = false; startJoinLoop(); }
+      break;
     case 'lobby':
+      S.ph = 'lobby';
       $('#sw-msg').textContent = 'Мұғалім ойынды бастағанша күт';
       show('v-swait'); break;
-    case 'question': renderSQ(d); break;
+    case 'question': S.ph = 'q'+d.qi; S.pending = null; renderSQ(d); break;
     case 'ack':
+      S.ph = 'a'+d.qi; S.pending = null;
       clearInterval(S.tick);
       $('#ss-emoji').textContent = '🚀'; $('#ss-title').textContent = 'Жауап жіберілді';
       show('v-ssent'); break;
-    case 'result': renderSRes(d); break;
-    case 'final': renderSFin(d); break;
+    case 'result': S.ph = 'r'+d.qi; S.pending = null; renderSRes(d); break;
+    case 'final': S.ph = 'f'; renderSFin(d); break;
     case 'kicked':
       S.kicked = true; S.joined = false;
       try { sessionStorage.removeItem('jl3-in-'+ROOM_N); } catch(_){}
@@ -825,8 +864,8 @@ function renderSQ(d){
   $('#sq-text').textContent = d.text;
   const box = $('#sq-opts'); box.innerHTML=''; box.className = 's-opts';
   const send = v => {
-    if (!S.conn || !S.conn.open) return;
-    S.conn.send({ t:'answer', qi:d.qi, value:v });
+    S.pending = { qi:d.qi, value:v };
+    netSend(TB+'/up', { t:'answer', id:S.id, qi:d.qi, value:v });
     clearInterval(S.tick);
     $('#ss-emoji').textContent = '🚀'; $('#ss-title').textContent = 'Жауап жіберілді';
     show('v-ssent');
@@ -887,7 +926,7 @@ function renderSFin(d){
 }
 
 /* =========================== ІСКЕ ҚОСУ ============================== */
-$('#to-teacher').onclick = e => { e.preventDefault(); clearTimeout(S.retryT); try{ S.peer && S.peer.destroy(); }catch(_){} hostStart(); };
+$('#to-teacher').onclick = e => { e.preventDefault(); location.hash = '#teacher'; location.reload(); };
 $('#btn-join').onclick = sJoin;
 $('#s-name').addEventListener('keydown', e => { if (e.key==='Enter') sJoin(); });
 $('#btn-start').onclick = () => startQuestion(0);
@@ -907,7 +946,7 @@ function showPicker(teacher){
   show('v-home');
 }
 (function boot(){
-  if (typeof Peer==='undefined'){ status('Кітапхана жүктелмеді. Интернетті тексеріп, бетті жаңартыңыз'); return; }
+  if (typeof mqtt==='undefined'){ status('Кітапхана жүктелмеді. Интернетті тексеріп, бетті жаңартыңыз'); return; }
   const teacher = location.hash==='#teacher' || location.hash==='#host';
   if (!ROOM_N){ showPicker(teacher); return; }
   if (teacher) hostStart(); else studentInit();
