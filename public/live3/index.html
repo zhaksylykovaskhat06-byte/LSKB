@@ -158,6 +158,7 @@ input{font:inherit}
 <body>
 
 <div class="status" id="status"></div>
+<div id="netbadge" style="position:fixed;right:10px;bottom:8px;font:600 11px Montserrat,system-ui,sans-serif;color:#ffb3b5;opacity:.85;z-index:30"></div>
 
 <!-- ============ БӨЛМЕ ТАҢДАУ ============ -->
 <section class="view center" id="v-home">
@@ -414,20 +415,35 @@ function roomLabel(n){ return n + '-куратор'; }
 
 /* ===== Байланыс: делдал сервер (MQTT) арқылы. Үш серверге қатар қосылады,
    біреуі жұмыс істесе жетеді; қайталанған хабарлар сүзіледі ===== */
-const BROKERS = ['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt','wss://test.mosquitto.org:8081/mqtt'];
+const BROKERS = [
+  { url:'wss://mqtt.eclipseprojects.io:443/mqtt' },
+  { url:'wss://public.cloud.shiftr.io:443', username:'public', password:'public' },
+  { url:'wss://broker.emqx.io:8084/mqtt' },
+  { url:'wss://broker.hivemq.com:8884/mqtt' },
+  { url:'wss://test.mosquitto.org:8081/mqtt' },
+];
+const NET_VER = 'v3';
 const TB = 'juz40live/v1/' + ROOM;
 const NET = { clients:[], seen:new Map(), started:false };
 function rid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
 function netUp(){ return NET.clients.some(c=>c._up); }
+function netBadge(){
+  const el = document.getElementById('netbadge'); if (!el) return;
+  const n = NET.clients.filter(c=>c._up).length;
+  el.textContent = 'Сервер: ' + n + '/' + BROKERS.length + ' · ' + NET_VER;
+  el.style.color = n ? '#7ee2a8' : '#ffb3b5';
+}
 function netStart(topics, onMsg, onState){
   if (NET.started) return; NET.started = true;
-  BROKERS.forEach(url => {
+  netBadge();
+  BROKERS.forEach(b => {
     let c;
-    try { c = mqtt.connect(url, { clientId:'j40_'+rid().slice(0,16), clean:true, keepalive:30, reconnectPeriod:2000, connectTimeout:8000 }); }
+    try { c = mqtt.connect(b.url, Object.assign({ clientId:'j40_'+rid().slice(0,16), clean:true, keepalive:30, reconnectPeriod:3000, connectTimeout:8000 },
+      b.username ? { username:b.username, password:b.password } : {})); }
     catch(_){ return; }
     c._up = false;
-    const down = () => { if (c._up){ c._up = false; onState(netUp()); } };
-    c.on('connect', () => { c.subscribe(topics, { qos:1 }); c._up = true; onState(true); });
+    const down = () => { if (c._up){ c._up = false; netBadge(); onState(netUp()); } };
+    c.on('connect', () => { c.subscribe(topics, { qos:1 }); c._up = true; netBadge(); onState(true); });
     c.on('close', down); c.on('offline', down); c.on('error', ()=>{});
     c.on('message', (t, buf) => {
       let d; try { d = JSON.parse(String(buf)); } catch(_){ return; }
