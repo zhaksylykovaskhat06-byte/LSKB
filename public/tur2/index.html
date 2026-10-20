@@ -145,7 +145,16 @@ kbd{font-family:"JetBrains Mono",monospace;font-size:12px;background:rgba(255,25
 .answer small{display:block;font-weight:600;font-size:.7em;margin-top:6px;color:#c9f5e6;line-height:1.45}
 .bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap}
 
-/* ---------- жауаптар кілті ---------- */
+/* ---------- дұрыс жауаптар ---------- */
+.anslist{display:flex;flex-direction:column;gap:10px;max-width:1100px;width:100%;margin:18px auto 0}
+.arow{display:grid;grid-template-columns:58px 1fr auto;gap:16px;align-items:center;background:var(--glass);border:1px solid var(--line);border-radius:18px;padding:12px 16px;text-align:left;color:var(--text);transition:border-color .2s}
+.arow:hover{border-color:var(--cyan)}
+.arow .an{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;font-size:24px;font-weight:900;color:#04121f;background:linear-gradient(135deg,var(--cyan),var(--violet))}
+.arow .aq{font-weight:700;font-size:clamp(14px,1.4vw,18px);line-height:1.35}
+.arow .aq small{display:block;color:#bff5e3;font-weight:600;font-size:.85em;margin-top:4px}
+.arow .aa{display:flex;align-items:center;gap:10px;font-weight:900;font-size:clamp(15px,1.6vw,20px);min-width:180px;justify-content:flex-end}
+.arow .hidden{font-family:"JetBrains Mono",monospace;color:var(--muted);letter-spacing:.3em}
+.arow.open{border-color:rgba(52,211,153,.6);background:linear-gradient(135deg,rgba(52,211,153,.16),rgba(34,211,238,.08));animation:pop .35s}
 .keytable{width:100%;border-collapse:separate;border-spacing:0 8px;margin-top:12px}
 .keytable td{background:var(--glass);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 14px;font-weight:700;font-size:16px}
 .keytable td:first-child{border-left:1px solid var(--line);border-radius:12px 0 0 12px;width:70px;text-align:center;font-weight:900;color:var(--cyan)}
@@ -176,7 +185,7 @@ kbd{font-family:"JetBrains Mono",monospace;font-size:12px;background:rgba(255,25
       <span>JUZ40 <b>Физика лигасы</b></span></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn ghost" id="btn-rules">📋 Ереже және форма</button>
-      <button class="btn ghost" id="btn-key">🔑 Жауаптар кілті</button>
+      <button class="btn ghost" id="btn-answers" style="border-color:rgba(52,211,153,.55);color:#a7f3d0">🏁 Дұрыс жауаптар</button>
       <button class="btn ghost" id="btn-sound" title="Таймер дыбысы">🔔 Дыбыс</button>
       <button class="btn ghost" id="btn-reset">↺ Карточкаларды жабу</button>
       <button class="btn ghost btn-fs">⛶ Толық экран</button>
@@ -208,11 +217,10 @@ kbd{font-family:"JetBrains Mono",monospace;font-size:12px;background:rgba(255,25
     </div>
   </div>
   <div class="opts" id="t-opts"></div>
-  <div class="answer" id="t-answer"></div>
   <div class="bottom">
     <button class="btn ghost" id="btn-back">← Карточкалар <kbd>Esc</kbd></button>
-    <div class="muted" style="font-size:13px;font-weight:600"><kbd>Бос орын</kbd> таймер · <kbd>Enter</kbd> жауап</div>
-    <button class="btn" id="btn-reveal">Дұрыс жауапты көрсету</button>
+    <div class="muted" style="font-size:13px;font-weight:600"><kbd>Бос орын</kbd> таймер · <kbd>→</kbd> келесі карточка</div>
+    <button class="btn" id="btn-next">Келесі карточка →</button>
   </div>
 </section>
 
@@ -234,14 +242,20 @@ kbd{font-family:"JetBrains Mono",monospace;font-size:12px;background:rgba(255,25
   </div>
 </div>
 
-<!-- ============ ЖАУАПТАР КІЛТІ ============ -->
-<div class="modal" id="m-key">
-  <div class="sheet" style="width:min(760px,100%)">
-    <div class="top"><h2>Жауаптар кілті</h2><button class="btn ghost" data-close>✕ Жабу</button></div>
-    <div class="muted" style="font-weight:600">Google форма жауаптарын тексеруге арналған. Оқушыларға көрсетпеңіз.</div>
-    <table class="keytable" id="key-table"></table>
+<!-- ============ ДҰРЫС ЖАУАПТАР (ЕҢ СОҢЫНДА) ============ -->
+<section class="view" id="v-answers">
+  <div class="top">
+    <div class="brand"><span>JUZ40 <b>Физика лигасы</b></span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn ghost" id="btn-ans-all">Барлығын ашу</button>
+      <button class="btn ghost btn-fs">⛶ Толық экран</button>
+      <button class="btn ghost" id="btn-ans-back">← Карточкалар</button>
+    </div>
   </div>
-</div>
+  <div class="hero" style="margin-top:10px"><div class="eyebrow">🏁 2-тур</div><h1><span>Дұрыс жауаптар</span></h1>
+    <div class="progress" style="margin-top:8px">Жауапты ашу үшін жолды басыңыз немесе <kbd>→</kbd> / <kbd>Бос орын</kbd></div></div>
+  <div class="anslist" id="anslist"></div>
+</section>
 
 <script>
 /* =====================================================================
@@ -270,8 +284,9 @@ const RULES = [
   '<b>Координатор</b> осы сайтқа кіріп, карточкаларды ретімен ашып отырады.',
   'Әр карточкада бір тапсырма және <b>A, B, C, D</b> варианттары бар.',
   'Оқушылар жауабын Google формадағы <b>карточка нөміріне сәйкес</b> сұраққа белгілейді: 1-карточка — 1-сұрақ, 2-карточка — 2-сұрақ және т.с.с.',
-  'Әр карточкаға уақыт беріледі. Уақыт біткен соң координатор дұрыс жауапты көрсетеді.',
-  'Барлық 7 карточка ашылғаннан кейін оқушылар Google форманы <b>жібереді</b>.',
+  'Әр карточкаға уақыт беріледі. Уақыт біткен соң координатор <b>келесі карточканы</b> ашады. Карточка кезінде дұрыс жауап айтылмайды.',
+  'Барлық 7 карточка біткен соң оқушылар Google форманы <b>жібереді</b>.',
+  '<b>Дұрыс жауаптар ең соңында</b>, формалар жіберілгеннен кейін ғана көрсетіледі.',
 ];
 
 /* ===================================================================== */
@@ -372,12 +387,9 @@ function openTask(i){
   $('#t-formnote').textContent='✍ Жауапты Google формадағы '+(i+1)+'-сұраққа белгіле';
   $('#t-text').textContent=c.text;
   const img=$('#t-img'); if (c.image){ img.src=c.image; img.hidden=false; } else { img.hidden=true; img.removeAttribute('src'); }
-  const box=$('#t-opts'); box.innerHTML=''; box.classList.remove('revealed');
-  c.options.forEach((o,k)=>box.append(h('div',{class:'opt o'+k+(k===c.answer?' right':'')},h('span',{class:'lt'},LETTERS[k]),h('span',{},o))));
-  const ans=$('#t-answer'); ans.classList.remove('on'); ans.innerHTML='';
-  ans.append('✓ Дұрыс жауап: '+LETTERS[c.answer]+') '+c.options[c.answer]);
-  if (c.explain) ans.append(h('small',{},c.explain));
-  $('#btn-reveal').disabled=false;
+  const box=$('#t-opts'); box.innerHTML='';
+  c.options.forEach((o,k)=>box.append(h('div',{class:'opt o'+k},h('span',{class:'lt'},LETTERS[k]),h('span',{},o))));
+  $('#btn-next').textContent = i<CARDS.length-1 ? 'Келесі карточка →' : 'Карточкаларға оралу';
   stopTimer(); total=left=(c.time||60); drawTimer(); setTimerBtn('▶ Уақытты бастау');
   show('v-task');
 }
@@ -400,15 +412,14 @@ function toggleTimer(){
     if (left<=0){ stopTimer(); setTimerBtn('↻ Қайта бастау'); drawTimer(); beep(440,.6,.12); setTimeout(()=>beep(330,.7,.12),250); }
   },1000);
 }
-function reveal(){
-  if (!isTask() || $('#btn-reveal').disabled) return;
-  stopTimer(); drawTimer(); setTimerBtn('▶ Уақытты бастау');
-  $('#t-opts').classList.add('revealed'); $('#t-answer').classList.add('on'); $('#btn-reveal').disabled=true;
-  beep(660,.12,.06); setTimeout(()=>beep(990,.25,.06),120);
+function nextCard(){
+  if (!isTask()) return;
+  stopTimer();
+  if (cur < CARDS.length-1) openTask(cur+1); else renderCards();
 }
 $('#btn-timer').onclick=toggleTimer;
 $('#btn-add').onclick=()=>{ left+=30; total=Math.max(total,left); drawTimer(); };
-$('#btn-reveal').onclick=reveal;
+$('#btn-next').onclick=nextCard;
 $('#btn-back').onclick=()=>{ stopTimer(); renderCards(); };
 $('#btn-reset').onclick=()=>{ if(!confirm('Барлық карточка жабық күйге қайтарылсын ба')) return; opened.clear(); save(); renderCards(); };
 document.querySelectorAll('.btn-fs').forEach(b=>b.onclick=()=>{ document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{}); });
@@ -435,23 +446,43 @@ $('#btn-form-save').onclick=()=>{
 };
 $('#btn-rules').onclick=()=>{ renderForm(); openModal('m-rules'); };
 
-/* --- жауаптар кілті --- */
-$('#btn-key').onclick=()=>{
-  if (!confirm('Жауаптар кілті ашылады. Экранды оқушылар көрмейтінін тексеріңіз')) return;
-  const t=$('#key-table'); t.innerHTML='';
-  CARDS.forEach((c,i)=>t.append(h('tr',{},h('td',{},(i+1)+'-сұрақ'),h('td',{},h('span',{class:'lt-s o'+c.answer},LETTERS[c.answer])),h('td',{},c.options[c.answer]))));
-  openModal('m-key');
-};
+/* --- дұрыс жауаптар: ең соңында --- */
+function isAnswers(){ return $('#v-answers').classList.contains('on'); }
+function openAnswers(){
+  const left = CARDS.length - opened.size;
+  if (!confirm(left>0 ? 'Әлі '+left+' карточка ашылмаған. Соған қарамастан дұрыс жауаптарды көрсету керек пе'
+                      : 'Оқушылар Google форманы жіберді ме. Дұрыс жауаптар көрсетіледі')) return;
+  const box=$('#anslist'); box.innerHTML='';
+  CARDS.forEach((c,i)=>box.append(h('button',{class:'arow',onclick:e=>openRow(e.currentTarget)},
+    h('span',{class:'an'},i+1),
+    h('span',{class:'aq'},c.text, h('small',{class:'ex',hidden:''},c.explain||'')),
+    h('span',{class:'aa'},h('span',{class:'hidden'},'• • •')))));
+  stopTimer(); show('v-answers');
+}
+function openRow(row){
+  if (!row || row.classList.contains('open')) return;
+  const i=[...row.parentNode.children].indexOf(row), c=CARDS[i];
+  row.classList.add('open');
+  const aa=row.querySelector('.aa'); aa.innerHTML='';
+  aa.append(h('span',{class:'lt-s o'+c.answer},LETTERS[c.answer]), h('span',{},c.options[c.answer]));
+  const ex=row.querySelector('.ex'); if (c.explain) ex.hidden=false;
+  beep(660,.1,.05); setTimeout(()=>beep(990,.2,.05),100);
+}
+function openNextRow(){ openRow([...document.querySelectorAll('#anslist .arow')].find(r=>!r.classList.contains('open'))); }
+$('#btn-answers').onclick=openAnswers;
+$('#btn-ans-all').onclick=()=>document.querySelectorAll('#anslist .arow').forEach(r=>{ if(!r.classList.contains('open')) openRow(r); });
+$('#btn-ans-back').onclick=renderCards;
 
 /* --- пернетақта --- */
 document.addEventListener('keydown',e=>{
   if (e.target.tagName==='INPUT') return;
   if (e.key==='Escape'){ if (modalOpen()){ document.querySelectorAll('.modal.on').forEach(m=>m.classList.remove('on')); return; }
-    if (isTask() && !document.fullscreenElement){ stopTimer(); renderCards(); } return; }
+    if ((isTask()||isAnswers()) && !document.fullscreenElement){ stopTimer(); renderCards(); } return; }
   if (modalOpen()) return;
-  if (!isTask() && /^[1-9]$/.test(e.key)){ const i=+e.key-1; if (i<CARDS.length) openCard(i, $('#grid').children[i]); return; }
+  if (!isTask() && !isAnswers() && /^[1-9]$/.test(e.key)){ const i=+e.key-1; if (i<CARDS.length) openCard(i, $('#grid').children[i]); return; }
   if (isTask() && e.key===' '){ e.preventDefault(); toggleTimer(); }
-  if (isTask() && e.key==='Enter'){ e.preventDefault(); reveal(); }
+  if (isTask() && e.key==='ArrowRight'){ e.preventDefault(); nextCard(); }
+  if (isAnswers() && (e.key==='ArrowRight' || e.key===' ')){ e.preventDefault(); openNextRow(); }
   if (isTask() && (e.key==='Backspace')){ e.preventDefault(); stopTimer(); renderCards(); }
 });
 
