@@ -64,10 +64,9 @@ kbd{font-family:"JetBrains Mono",monospace;font-size:12px;background:rgba(255,25
 .dots i{width:22px;height:6px;border-radius:9px;background:rgba(255,255,255,.12)}
 .dots i.on{background:linear-gradient(90deg,var(--cyan),var(--violet))}
 
-.grid{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,1.8vw,22px);align-content:center;max-width:1280px;width:100%;margin:18px auto 0;perspective:1400px}
-.grid .card:nth-child(n+5){transform:translateX(calc(50% + clamp(6px,.9vw,11px)))}
-@media (max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}.grid .card:nth-child(n+5){transform:none}}
-.card{position:relative;height:clamp(150px,31vh,380px);border-radius:22px;color:var(--text);overflow:hidden;
+.grid{flex:1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(10px,1.4vw,18px);align-content:center;max-width:1280px;width:100%;margin:18px auto 0;perspective:1400px}
+@media (max-width:760px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.card .topic{display:none}.card.hard::after{content:'★';}}
+.card{position:relative;height:clamp(110px,20.5vh,250px);border-radius:20px;color:var(--text);overflow:hidden;
   background:linear-gradient(160deg,rgba(34,211,238,.14),rgba(167,139,250,.10) 60%,rgba(255,255,255,.02));
   border:1px solid var(--line);backdrop-filter:blur(8px);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
@@ -76,9 +75,9 @@ kbd{font-family:"JetBrains Mono",monospace;font-size:12px;background:rgba(255,25
 .card:hover{border-color:var(--cyan);box-shadow:0 22px 50px rgba(0,0,0,.55),0 0 0 1px var(--cyan),0 0 34px rgba(34,211,238,.25)}
 .card .ico{position:absolute;inset:auto;right:-18px;bottom:-18px;width:58%;opacity:.16;color:var(--cyan);transition:opacity .25s,transform .6s}
 .card:hover .ico{opacity:.32;transform:rotate(12deg) scale(1.05)}
-.card .num{font-size:clamp(60px,8.5vw,128px);font-weight:900;line-height:1;background:linear-gradient(180deg,#fff,#9be7ff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 18px rgba(34,211,238,.35))}
+.card .num{font-size:clamp(40px,5.4vw,92px);font-weight:900;line-height:1;background:linear-gradient(180deg,#fff,#9be7ff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 18px rgba(34,211,238,.35))}
 .card .lbl{font-family:"JetBrains Mono",monospace;font-size:clamp(11px,1vw,14px);font-weight:700;letter-spacing:.22em;color:var(--cyan)}
-.card .topic{position:absolute;top:14px;left:16px;font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.04em}
+.card .topic{position:absolute;top:10px;left:12px;right:12px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:800;color:var(--muted);letter-spacing:.04em}
 .card.done{background:rgba(255,255,255,.025);border-color:rgba(255,255,255,.06);box-shadow:none}
 .card.done .num{background:none;color:#2b4157;filter:none}
 .card.done .lbl,.card.done .topic{color:#2b4157}
@@ -87,6 +86,23 @@ kbd{font-family:"JetBrains Mono",monospace;font-size:12px;background:rgba(255,25
 .card.flip{animation:flip .5s ease-in forwards}
 @keyframes flip{to{transform:rotateY(90deg) scale(1.08);opacity:.2}}
 .hint{text-align:center;color:var(--muted);font-size:13px;font-weight:600;margin-top:14px}
+
+/* жоғары деңгей */
+.card.hard{border-color:rgba(251,191,36,.55);background:linear-gradient(160deg,rgba(251,146,60,.20),rgba(244,63,94,.12) 60%,rgba(255,255,255,.02))}
+.card.hard .num{background:linear-gradient(180deg,#fff,#fcd34d);-webkit-background-clip:text;background-clip:text}
+.card.hard .lbl{color:#fbbf24}
+.card.hard .ico{color:#fbbf24}
+.card.hard::after{content:"★ ЖОҒАРЫ ДЕҢГЕЙ";position:absolute;bottom:8px;font-size:10px;font-weight:900;letter-spacing:.08em;color:#fbbf24}
+.card.hard:hover{border-color:#fbbf24;box-shadow:0 22px 50px rgba(0,0,0,.55),0 0 0 1px #fbbf24,0 0 34px rgba(251,191,36,.3)}
+.card.done.hard::after{color:#2b4157}
+.splash .lv{font-weight:900;color:#fbbf24;letter-spacing:.2em;font-size:clamp(14px,1.6vw,20px);animation:popin .5s .35s both;display:none}
+.splash.hard .lv{display:block}
+.splash.hard .si{color:#fbbf24}
+.splash.hard .ring2{border-color:rgba(251,191,36,.4)}
+.letters{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:clamp(6px,1vw,12px);flex-wrap:wrap;padding:30px}
+.letters span{width:clamp(44px,5vw,70px);height:clamp(54px,6vw,84px);display:grid;place-items:center;border-radius:14px;font-size:clamp(28px,3.4vw,48px);font-weight:900;color:#04121f;
+  background:linear-gradient(180deg,#fff,#bfe9ff);box-shadow:0 8px 0 #0e7490,0 12px 26px rgba(0,0,0,.4);animation:popin .45s both}
+.playbtn{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:4}
 
 /* ---------- ереже / баптау панелі ---------- */
 .modal{position:fixed;inset:0;background:rgba(2,8,16,.72);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
@@ -248,7 +264,7 @@ kbd{font-family:"JetBrains Mono",monospace;font-size:12px;background:rgba(255,25
     <div class="progress"><div class="dots" id="dots"></div><span id="prog"></span></div>
   </div>
   <div class="grid" id="grid"></div>
-  <div class="hint">Карточканы басыңыз немесе пернетақтадан <kbd>1</kbd>–<kbd>7</kbd> санын басыңыз</div>
+  <div class="hint">Карточканы басыңыз немесе пернетақтадан нөмірін теріңіз (<kbd>1</kbd>–<kbd>15</kbd>)</div>
 </section>
 
 <!-- ============ ТАПСЫРМА ============ -->
@@ -281,7 +297,7 @@ kbd{font-family:"JetBrains Mono",monospace;font-size:12px;background:rgba(255,25
 
 <!-- ============ ФОРМАТ ЗАСТАВКАСЫ ============ -->
 <div class="splash" id="splash"><div class="ring2"></div><div class="ring2 b"></div>
-  <div class="si" id="sp-ico"></div><div class="sn" id="sp-num"></div><div class="sf" id="sp-fmt"></div></div>
+  <div class="si" id="sp-ico"></div><div class="sn" id="sp-num"></div><div class="sf" id="sp-fmt"></div><div class="lv">★ ЖОҒАРЫ ДЕҢГЕЙ ★</div></div>
 
 <!-- ============ ЕРЕЖЕ ЖӘНЕ ФОРМА ============ -->
 <div class="modal" id="m-rules">
@@ -357,6 +373,38 @@ const CARDS = [
     text:'Суреттегі жасырын формуланы тап',
     options:['p = mυ','F = ma','A = Fs','P = A / t'], answer:1,
     explain:'кг · м/с² = Н: масса × үдеу = күш. Бұл — Ньютонның екінші заңы, F = ma.' },
+  { format:'Артығын тап', icon:12, anim:'oddone', time:60,
+    text:'Артығын тап: бір өлшем бірлігі қалған үшеуінен басқа физикалық шаманы өлшейді',
+    options:['Джоуль','Электронвольт','Ватт','Киловатт-сағат'], answer:2,
+    explain:'Джоуль, электронвольт және киловатт-сағат — энергия (жұмыс) бірліктері. Ватт — қуат бірлігі: 1 Вт = 1 Дж/с.' },
+  { format:'График тілі', icon:13, anim:'graph', time:60,
+    text:'Графикте дене жылдамдығының уақытқа тәуелділігі көрсетілген. Бұл қандай қозғалыс',
+    options:['Тыныштық күйден басталған бірқалыпты үдемелі қозғалыс','Бірқалыпты түзусызықты қозғалыс','Бірқалыпты кемімелі қозғалыс','Дене тыныштықта тұр'], answer:0,
+    explain:'υ(t) графигі координат басынан шығатын көлбеу түзу: жылдамдық нөлден бастап уақытқа пропорционал артады, яғни үдеу тұрақты.' },
+  { format:'Анаграмма', icon:14, anim:'anagram', word:'ИНЕРЦИЯ', time:60,
+    text:'Әріптердің орны ауысып кеткен. Осы әріптерден құралатын физикалық ұғымды тап',
+    options:['Энергия','Реакция','Иондану','Инерция'], answer:3,
+    explain:'Ц, И, Я, Р, Е, Н, И әріптерінен «ИНЕРЦИЯ» сөзі құралады — дененің жылдамдығын сақтау қасиеті.' },
+  { format:'Шамала!', icon:15, anim:'light', time:60,
+    text:'Бағалау тапсырмасы: Күннен шыққан жарық Жерге шамамен қанша уақытта жетеді',
+    options:['8 секунд','8 минут','8 сағат','8 тәулік'], answer:1,
+    explain:'t = s / c ≈ 1,5·10¹¹ м / 3·10⁸ м/с ≈ 500 с ≈ 8,3 минут.' },
+  { format:'Дыбыс құпиясы', icon:16, anim:'doppler', time:75,
+    text:'«▶ Тыңдау» батырмасын бас: жанымыздан өтіп бара жатқан көліктің сиренасы осылай естіледі. Дыбыс биіктігінің өзгеруі қай құбылысқа байланысты',
+    options:['Доплер эффектісі','Резонанс','Дыбыс толқындарының интерференциясы','Жаңғырық (эхо)'], answer:0,
+    explain:'Көлік жақындағанда толқындар «сығылып», естілетін жиілік артады; алыстағанда «созылып», жиілік кемиді. Бұл — Доплер эффектісі.' },
+  { format:'Ой-тәжірибе', icon:17, anim:'tunnel', level:'hard', time:120,
+    text:'Жерді центрі арқылы тесіп өтетін түзу тоннель қазылды делік. Ауа кедергісі мен үйкеліс жоқ, Жер — біртекті шар және айналмайды. Тоннельге тас тастасақ, не болады',
+    options:['Жердің центрінде тоқтап қалады','Жердің центрінен өтіп, ғарышқа ұшып кетеді','Жердің екінші жағына дейін жетіп, кері қайтып, тербеле береді','Жылдамдығы үнемі артып, екінші жақтан ұшып шығады'], answer:2,
+    explain:'Біртекті шар ішінде тартылыс күші центрге дейінгі қашықтыққа пропорционал (F ~ r), сондықтан тас гармоникалық тербеледі: центрде жылдамдығы ең үлкен, екінші жақтағы бетте нөлге теңеліп, кері қайтады. Бір жаққа жету уақыты шамамен 42 минут.' },
+  { format:'Парадокс', icon:18, anim:'iss', level:'hard', time:120,
+    text:'Халықаралық ғарыш стансасында ғарышкерлер салмақсыздықта жүзіп жүреді. Станса ұшатын шамамен 400 км биіктікте еркін түсу үдеуі Жер бетіндегімен салыстырғанда қандай',
+    options:['Нөлге тең','Жер бетіндегіден шамамен 100 есе аз','Жер бетіндегіден үлкен','Жер бетіндегіден шамамен 10 %-ға ғана аз'], answer:3,
+    explain:'g = g₀·(R / (R + h))² ≈ 9,8·(6371 / 6771)² ≈ 8,7 м/с². Салмақсыздық тартылыс жоқ болғандықтан емес, станса мен ғарышкер бірге еркін түсіп (орбита бойымен «құлап») жүргендіктен болады.' },
+  { format:'Финал', icon:19, anim:'icecube', level:'hard', time:120,
+    text:'Стақандағы суда ішіне тас қатып қалған мұз текшесі жүзіп жүр. Мұз толық еріген соң, тас түбіне батты. Стақандағы су деңгейі қалай өзгереді',
+    options:['Көтеріледі','Төмендейді','Өзгермейді','Тастың массасына байланысты: көтерілуі де, төмендеуі де мүмкін'], answer:1,
+    explain:'Жүзіп тұрғанда тас өз салмағына тең су ығыстырады: m/ρсу көлем. Батқан соң тек өз көлемін ығыстырады: m/ρтас. ρтас > ρсу болғандықтан, ығыстырылған көлем азаяды — деңгей кез келген тас үшін төмендейді (мұздың өзі еріп, ығыстырған көлемін дәл толтырады).' }
 ];
 
 /* Жарыс ережесі (экрандағы «Ереже және форма» терезесінде шығады) */
@@ -366,7 +414,8 @@ const RULES = [
   'Әр карточкада бір тапсырма және <b>A, B, C, D</b> варианттары бар.',
   'Оқушылар жауабын Google формадағы <b>карточка нөміріне сәйкес</b> сұраққа белгілейді: 1-карточка — 1-сұрақ, 2-карточка — 2-сұрақ және т.с.с.',
   'Әр карточкаға уақыт беріледі. Уақыт біткен соң координатор <b>келесі карточканы</b> ашады. Карточка кезінде дұрыс жауап айтылмайды.',
-  'Барлық 7 карточка біткен соң оқушылар Google форманы <b>жібереді</b>.',
+  'Барлық '+CARDS.length+' карточка біткен соң оқушылар Google форманы <b>жібереді</b>.',
+  'Соңғы 3 карточка — <b>★ жоғары деңгей</b>: оларға көбірек уақыт беріледі.',
   '<b>Дұрыс жауаптар ең соңында</b>, формалар жіберілгеннен кейін ғана көрсетіледі.',
 ];
 
@@ -399,6 +448,22 @@ const ICONS = [
   '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3"><path d="M26 10H74M26 90H74"/><path d="M30 10C30 38 70 38 70 50S30 62 30 90M70 10C70 38 30 38 30 50S70 62 70 90"/><path d="M40 82Q50 70 60 82Z" fill="currentColor"/></svg>',
   // 11 сурет
   '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3"><rect x="10" y="16" width="80" height="68" rx="8"/><circle cx="34" cy="38" r="8"/><path d="M14 76L40 54L56 68L70 56L88 72"/></svg>',
+  // 12 артығын тап
+  '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3"><circle cx="28" cy="28" r="14"/><circle cx="72" cy="28" r="14"/><circle cx="28" cy="72" r="14"/><rect x="58" y="58" width="28" height="28" rx="4" fill="currentColor" opacity=".7"/></svg>',
+  // 13 график
+  '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3"><path d="M14 10V86H92"/><path d="M14 86L84 20" stroke-width="4"/><path d="M8 18L14 10L20 18M84 80L92 86L84 92"/></svg>',
+  // 14 әріптер
+  '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3"><rect x="8" y="26" width="26" height="34" rx="5"/><rect x="38" y="40" width="26" height="34" rx="5"/><rect x="68" y="20" width="26" height="34" rx="5"/><path d="M16 50L21 34L26 50M45 66V48H55M76 46V28H86"/></svg>',
+  // 15 ≈ бағалау
+  '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"><path d="M18 40Q34 26 50 40T82 40M18 62Q34 48 50 62T82 62"/></svg>',
+  // 16 дыбыс
+  '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 40H28L48 22V78L28 60H12Z" fill="currentColor" opacity=".7"/><path d="M60 36Q70 50 60 64M70 26Q86 50 70 74M80 16Q102 50 80 84"/></svg>',
+  // 17 ой бұлты
+  '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3"><path d="M26 64C10 64 10 42 26 42C26 24 52 20 58 34C74 26 90 40 80 54C90 64 76 74 66 68C60 76 40 76 36 66C32 68 28 66 26 64Z"/><circle cx="24" cy="80" r="5"/><circle cx="14" cy="90" r="3"/></svg>',
+  // 18 шексіздік / парадокс
+  '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="5"><path d="M50 50C38 30 12 30 12 50S38 70 50 50S88 30 88 50S62 70 50 50Z"/></svg>',
+  // 19 кубок
+  '<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3"><path d="M30 14H70V38A20 20 0 0 1 30 38Z"/><path d="M30 20H16Q14 40 32 44M70 20H84Q86 40 68 44"/><path d="M50 58V72M36 86H64M40 72H60V86H40Z"/></svg>',
 ];
 let opened = new Set(), cur = -1, tick = null, left = 0, total = 60, running = false, sound = true;
 try { opened = new Set(JSON.parse(localStorage.getItem(KEY)||'[]')); } catch(_){}
@@ -452,7 +517,7 @@ function renderCards(){
   const g=$('#grid'); g.innerHTML='';
   CARDS.forEach((c,i)=>{
     const done=opened.has(i);
-    g.append(h('button',{class:'card'+(done?' done':''),onclick:e=>openCard(i,e.currentTarget),'aria-label':(i+1)+'-карточка'},
+    g.append(h('button',{class:'card'+(done?' done':'')+(c.level==='hard'?' hard':''),onclick:e=>openCard(i,e.currentTarget),'aria-label':(i+1)+'-карточка'},
       h('span',{class:'ico',html:ICONS[c.icon!=null?c.icon:i%ICONS.length]}),
       (c.topic||c.format)? h('span',{class:'topic'},c.topic||c.format):null,
       done? h('span',{class:'badge'},'✓ ашылды'):null,
@@ -472,6 +537,7 @@ function showSplash(i){
   $('#sp-ico').innerHTML=ICONS[c.icon!=null?c.icon:i%ICONS.length];
   $('#sp-num').textContent=(i+1)+'-КАРТОЧКА';
   $('#sp-fmt').textContent=c.format||'Тапсырма';
+  sp.classList.toggle('hard', c.level==='hard');
   // анимацияны қайта қосу
   sp.querySelectorAll('.si,.sn,.sf').forEach(e=>{ e.style.animation='none'; e.offsetWidth; e.style.animation=''; });
   sp.classList.add('on'); beep(392,.18,.06); setTimeout(()=>beep(523,.18,.06),160); setTimeout(()=>beep(784,.3,.06),320);
@@ -563,6 +629,96 @@ const STAGES = {
     return w;
   },
 };
+Object.assign(STAGES, {
+  oddone(){
+    const w=h('div',{class:'rebus'});
+    ['Дж','эВ','Вт','кВт·сағ'].forEach((u,k)=>{ const t=h('div',{class:'rb'},h('div',{class:'e',style:'font-family:JetBrains Mono,monospace;font-weight:700;color:#e6f6ff;font-size:clamp(30px,3.6vw,52px)'},u)); t.style.animationDelay=(k*.25)+'s'; t.firstChild.style.animationDelay=(k*.4)+'s'; w.append(t); });
+    return w;
+  },
+  graph(){
+    let grid=''; for(let k=1;k<9;k++) grid+='<path d="M'+(60+k*38)+' 40V250M60 '+(250-k*24)+'H400" stroke="rgba(120,200,255,.12)"/>';
+    return '<svg class="scene" viewBox="0 0 440 300">'+grid
+      +'<path d="M60 30V250H410" stroke="#e6f6ff" stroke-width="3" fill="none"/><path d="M52 40L60 26L68 40M398 242L414 250L398 258" stroke="#e6f6ff" stroke-width="3" fill="none"/>'
+      +'<text x="30" y="40" fill="#22d3ee" font-size="22" font-weight="900" font-family="Montserrat">υ</text><text x="414" y="280" fill="#22d3ee" font-size="22" font-weight="900" font-family="Montserrat">t</text><text x="44" y="268" fill="#8fb0c8" font-size="16" font-family="Montserrat">0</text>'
+      +'<path d="M60 250L380 60" stroke="url(#gw)" stroke-width="5" stroke-linecap="round" fill="none" stroke-dasharray="380" stroke-dashoffset="380" style="animation:dash 2.4s ease-out forwards"/>'
+      +'<circle cx="60" cy="250" r="7" fill="#f472b6"/></svg>';
+  },
+  anagram(c){
+    const w=h('div',{class:'letters'}), word=c.word;
+    const shuffle=()=>{ let a; do { a=[...word].sort(()=>Math.random()-.5).join(''); } while(a===word); return a; };
+    const draw=t=>{ w.innerHTML=''; [...t].forEach((ch,k)=>{ const sp=h('span',{},ch); sp.style.animationDelay=(k*.06)+'s'; w.append(sp); }); };
+    draw('ЦИЯРЕНИ'===word?shuffle():'ЦИЯРЕНИ');
+    const timer=setInterval(()=>{ if(!document.body.contains(w)) return clearInterval(timer); draw(shuffle()); }, 3500);
+    return w;
+  },
+  light(){
+    return '<svg class="scene" viewBox="0 0 440 300"><defs><radialGradient id="sun"><stop offset="0" stop-color="#fff7c2"/><stop offset=".5" stop-color="#fbbf24"/><stop offset="1" stop-color="#f97316" stop-opacity="0"/></radialGradient></defs>'
+      +'<circle cx="40" cy="150" r="110" fill="url(#sun)" style="animation:blink 3s infinite"/><circle cx="20" cy="150" r="56" fill="#fbbf24"/>'
+      +'<circle cx="390" cy="150" r="22" fill="#2563eb"/><path d="M372 142Q386 132 402 140Q394 154 378 158Z" fill="#22c55e"/>'
+      +'<path d="M80 150H366" stroke="#8fb0c8" stroke-dasharray="6 8"/>'
+      +'<text x="170" y="134" fill="#e6f6ff" font-size="16" font-weight="800" font-family="Montserrat">≈ 150 млн км</text>'
+      +'<text x="186" y="186" fill="#22d3ee" font-size="18" font-weight="800" font-family="JetBrains Mono">t = • • •</text>'
+      +'<circle r="6" fill="#fff" style="filter:drop-shadow(0 0 8px #fde047)"><animateMotion dur="2.6s" repeatCount="indefinite" path="M80 150H366"/></circle></svg>';
+  },
+  doppler(){
+    const wrap=h('div');
+    let rings=''; for(let k=0;k<5;k++) rings+='<circle r="10" fill="none" stroke="#22d3ee" stroke-width="2"><animate attributeName="r" from="10" to="160" dur="2.5s" begin="'+(k*.5)+'s" repeatCount="indefinite"/><animate attributeName="opacity" from=".8" to="0" dur="2.5s" begin="'+(k*.5)+'s" repeatCount="indefinite"/></circle>';
+    wrap.innerHTML='<svg class="scene" viewBox="0 0 440 300"><rect x="-500" y="200" width="1440" height="60" fill="#1f2937"/><path d="M-500 230H940" stroke="#fbbf24" stroke-width="4" stroke-dasharray="26 22"/>'
+      +'<g><animateTransform attributeName="transform" type="translate" from="-80 0" to="520 0" dur="5s" repeatCount="indefinite"/>'
+      +'<g transform="translate(0,190)">'+rings+'</g>'
+      +'<rect x="-34" y="168" width="68" height="34" rx="8" fill="#f8fafc"/><rect x="-20" y="152" width="40" height="20" rx="5" fill="#e2e8f0"/><rect x="-8" y="146" width="16" height="7" rx="3" fill="#ef4444" style="animation:blink .4s infinite"/>'
+      +'<path d="M-6 178H6M0 172V184" stroke="#ef4444" stroke-width="4"/><circle cx="-20" cy="204" r="9" fill="#111827"/><circle cx="20" cy="204" r="9" fill="#111827"/></g>'
+      +'<g transform="translate(220,120)" fill="#e6f6ff"><circle r="12"/><path d="M0 12V50M0 50L-12 76M0 50L12 76M0 24L-16 40M0 24L16 40" stroke="#e6f6ff" stroke-width="5" stroke-linecap="round"/></g></svg>';
+    wrap.append(h('button',{class:'btn playbtn',onclick:playSiren},'▶ Тыңдау'));
+    return wrap;
+  },
+  tunnel(){
+    return '<svg class="scene" viewBox="0 0 440 300">'
+      +'<circle cx="220" cy="160" r="120" fill="#1d4ed8"/><circle cx="220" cy="160" r="96" fill="#b45309"/><circle cx="220" cy="160" r="62" fill="#f97316"/><circle cx="220" cy="160" r="30" fill="#fde047"/>'
+      +'<path d="M150 70Q170 50 200 56Q190 80 160 84Z M240 230Q270 220 290 240Q260 262 240 248Z" fill="#22c55e" opacity=".9"/>'
+      +'<rect x="212" y="40" width="16" height="240" fill="#0b1626" opacity=".85"/><path d="M220 40V280" stroke="#22d3ee" stroke-width="2" stroke-dasharray="6 6"/>'
+      +'<g style="animation:float 1.6s ease-in-out infinite"><circle cx="220" cy="22" r="11" fill="#94a3b8" stroke="#e2e8f0" stroke-width="2"/></g>'
+      +'<path d="M236 18L262 18" stroke="#fbbf24" stroke-width="3"/><text x="268" y="24" fill="#fbbf24" font-size="15" font-weight="800" font-family="Montserrat">тас</text></svg>';
+  },
+  iss(){
+    return '<svg class="scene" viewBox="0 0 440 300"><defs><radialGradient id="earth" cx=".5" cy=".3"><stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#1e3a8a"/></radialGradient></defs>'
+      +'<g fill="#fff">'+Array.from({length:40},(_,k)=>'<circle cx="'+(-200+(k*97)%840)+'" cy="'+((k*61)%170)+'" r="'+(k%3?1:1.8)+'" style="animation:blink '+(1.5+k%4*.5)+'s infinite"/>').join('')+'</g>'
+      +'<circle cx="220" cy="560" r="360" fill="url(#earth)"/><circle cx="220" cy="560" r="368" fill="none" stroke="#7dd3fc" stroke-opacity=".5" stroke-width="6"/>'
+      +'<path d="M-40 236 Q220 120 480 236" fill="none" stroke="#8fb0c8" stroke-dasharray="6 8"/>'
+      +'<g><animateMotion dur="9s" repeatCount="indefinite" path="M-40 236 Q220 120 480 236"/>'
+      +'<rect x="-34" y="-5" width="68" height="10" fill="#cbd5e1"/><rect x="-40" y="-18" width="16" height="36" fill="#2563eb" stroke="#93c5fd"/><rect x="24" y="-18" width="16" height="36" fill="#2563eb" stroke="#93c5fd"/><rect x="-10" y="-9" width="20" height="18" rx="3" fill="#e2e8f0"/></g>'
+      +'<text x="16" y="200" font-size="15" fill="#e6f6ff" font-weight="800" font-family="Montserrat">h ≈ 400 км</text>'
+      +'<text x="290" y="80" font-size="56" style="animation:float 2.4s ease-in-out infinite">🧑‍🚀</text></svg>';
+  },
+  icecube(){
+    return '<svg class="scene" viewBox="0 0 440 300">'
+      +'<path d="M140 50L156 270H284L300 50" fill="rgba(255,255,255,.06)" stroke="#cbd5e1" stroke-width="4"/>'
+      +'<path d="M146.5 130L156 270H284L293.5 130Z" fill="#38bdf8" opacity=".45"/>'
+      +'<path d="M120 130H320" stroke="#fbbf24" stroke-width="2" stroke-dasharray="8 6"/><text x="324" y="135" fill="#fbbf24" font-size="15" font-weight="800" font-family="Montserrat">деңгей</text>'
+      +'<g style="animation:float 2.2s ease-in-out infinite"><rect x="186" y="98" width="62" height="54" rx="8" fill="rgba(224,242,254,.85)" stroke="#fff" stroke-width="2"/>'
+      +'<path d="M200 140L210 118L232 114L238 134L222 146Z" fill="#475569"/><path d="M192 104H214" stroke="#fff" stroke-width="3" opacity=".8"/></g>'
+      +'<text x="250" y="96" fill="#e6f6ff" font-size="14" font-weight="800" font-family="Montserrat">мұз + тас</text></svg>';
+  },
+});
+function playSiren(){
+  try {
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const t0=actx.currentTime, dur=5;
+    const o=actx.createOscillator(), lfo=actx.createOscillator(), lg=actx.createGain(), g=actx.createGain();
+    o.type='sawtooth'; lfo.frequency.value=2.2; lg.gain.value=60;
+    lfo.connect(lg); lg.connect(o.frequency);
+    // Доплер: жақындағанда жиілік жоғары, өткен соң төмен
+    o.frequency.setValueAtTime(820, t0);
+    o.frequency.setValueAtTime(820, t0+2.2);
+    o.frequency.linearRampToValueAtTime(610, t0+2.8);
+    o.frequency.setValueAtTime(610, t0+dur);
+    g.gain.setValueAtTime(.001, t0);
+    g.gain.exponentialRampToValueAtTime(.18, t0+2.4);
+    g.gain.exponentialRampToValueAtTime(.001, t0+dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(t0); lfo.start(t0); o.stop(t0+dur); lfo.stop(t0+dur);
+  } catch(_){ alert('Бұл браузерде дыбыс ойнатылмады'); }
+}
 let hintShown=0;
 function renderStage(i){
   const c=CARDS[i], st=$('#t-stage'); st.innerHTML='';
@@ -591,7 +747,7 @@ function openTask(i){
   opened.add(i); save();
   $('#t-num').textContent=i+1;
   $('#t-title').textContent=(i+1)+'-карточка';
-  $('#t-topic').textContent=(c.format||c.topic||'')+' · '+(i+1)+' / '+CARDS.length;
+  $('#t-topic').textContent=(c.format||c.topic||'')+(c.level==='hard'?' · ★ жоғары деңгей':'')+' · '+(i+1)+' / '+CARDS.length;
   $('#t-formnote').textContent='✍ Жауапты Google формадағы '+(i+1)+'-сұраққа белгіле';
   $('#t-text').textContent=c.text;
   renderStage(i);
@@ -683,12 +839,17 @@ $('#btn-ans-all').onclick=()=>document.querySelectorAll('#anslist .arow').forEac
 $('#btn-ans-back').onclick=renderCards;
 
 /* --- пернетақта --- */
+let numBuf='', numT=null;
 document.addEventListener('keydown',e=>{
   if (e.target.tagName==='INPUT') return;
   if (e.key==='Escape'){ if (modalOpen()){ document.querySelectorAll('.modal.on').forEach(m=>m.classList.remove('on')); return; }
     if ((isTask()||isAnswers()) && !document.fullscreenElement){ stopTimer(); $('#t-stage').innerHTML=''; renderCards(); } return; }
   if (modalOpen()) return;
-  if (!isTask() && !isAnswers() && /^[1-9]$/.test(e.key)){ const i=+e.key-1; if (i<CARDS.length) openCard(i, $('#grid').children[i]); return; }
+  if (!isTask() && !isAnswers() && /^[0-9]$/.test(e.key)){
+    numBuf += e.key; clearTimeout(numT);
+    const n=+numBuf, fire=()=>{ const i=+numBuf-1; numBuf=''; if (i>=0 && i<CARDS.length) openCard(i, $('#grid').children[i]); };
+    if (numBuf.length>=2 || n*10>CARDS.length) fire(); else numT=setTimeout(fire, 700);
+    return; }
   if (isTask() && e.key===' '){ e.preventDefault(); toggleTimer(); }
   if (isTask() && e.key==='ArrowRight'){ e.preventDefault(); nextCard(); }
   if (isTask() && (e.key==='h'||e.key==='H'||e.key==='п'||e.key==='П')){ e.preventDefault(); nextHint(); }
