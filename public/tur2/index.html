@@ -61,7 +61,8 @@ kbd{font-family:"JetBrains Mono",monospace;font-size:12px;background:rgba(255,25
 .hero h1 span{background:linear-gradient(90deg,var(--cyan),var(--violet) 55%,var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
 .progress{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;font-weight:700;color:var(--muted);font-size:14px}
 .dots{display:flex;gap:6px}
-.dots i{width:22px;height:6px;border-radius:9px;background:rgba(255,255,255,.12)}
+.dots i{width:clamp(8px,1.6vw,22px);height:6px;border-radius:9px;background:rgba(255,255,255,.12)}
+@media (max-width:760px){.progress{flex-direction:column;gap:6px}}
 .dots i.on{background:linear-gradient(90deg,var(--cyan),var(--violet))}
 
 .grid{flex:1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(10px,1.4vw,18px);align-content:center;max-width:1280px;width:100%;margin:18px auto 0;perspective:1400px}
