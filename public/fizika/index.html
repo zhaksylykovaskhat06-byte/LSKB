@@ -6,62 +6,83 @@
 <title>Физика: 7 сұрақты дәлелдейміз</title>
 <meta name="description" content="Физиканы оқыту әдістемесі, II нұсқа: 7 сұрақтың интерактивті дәлелдемелері">
 <style>
-:root{--ink:#0b1838;--sky:#3a60a0;--plum:#4d4177;--soft:#88a5e0;--glow:#c8ddf5;--bg:#f4f7fc;--card:#ffffff;--muted:#56627a;--red:#c0392b;--orange:#e08a1e;--green:#2e8b57;--line:#dbe4f2}
+:root{--ink:#0b1838;--sky:#3a60a0;--plum:#4d4177;--soft:#88a5e0;--glow:#c8ddf5;--bg:#eef2fa;--card:#ffffff;--muted:#56627a;--red:#c0392b;--orange:#e08a1e;--green:#2e8b57;--line:#dde5f2;--c:#3a60a0}
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.55;font-size:16px}
-header{background:linear-gradient(135deg,#0b1838,#4d4177);color:#fff;padding:28px 16px 22px}
-header .wrap{max-width:900px;margin:0 auto}
-header h1{margin:0 0 6px;font-size:24px;line-height:1.25}
-header p{margin:0;color:#c8ddf5;font-size:14px}
-nav{position:sticky;top:0;z-index:5;background:rgba(244,247,252,.97);border-bottom:1px solid var(--line);padding:8px 12px;white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
-nav a{display:inline-block;margin-right:6px;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--ink);text-decoration:none;font-size:14px;font-weight:600}
-nav a:active{background:var(--glow)}
-main{max-width:900px;margin:0 auto;padding:12px 16px 40px}
-section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 16px;margin:18px 0;box-shadow:0 2px 10px rgba(11,24,56,.05)}
-.num{display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;border-radius:50%;background:var(--sky);color:#fff;font-weight:700;margin-right:8px;font-size:15px}
-h2{font-size:19px;margin:0 0 10px;line-height:1.3}
-h3{font-size:15px;margin:16px 0 6px;color:var(--sky);text-transform:uppercase;letter-spacing:.03em}
-.q{background:#f1f5fb;border-left:4px solid var(--soft);padding:10px 12px;border-radius:8px;font-size:14px;color:var(--muted)}
-.f{display:block;background:#eef3fa;border-radius:8px;padding:9px 12px;margin:8px 0;font-weight:700;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:14.5px;overflow-x:auto}
-canvas{display:block;width:100%;background:#fbfdff;border:1px solid var(--line);border-radius:12px;touch-action:manipulation}
-.ctrl{margin:10px 0 4px}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.6;font-size:16px}
+header{position:relative;overflow:hidden;background:#0b1838;background:linear-gradient(140deg,#0b1838 0%,#1c2a5c 55%,#4d4177 100%);color:#fff;padding:34px 16px 30px}
+#hero{position:absolute;top:0;left:0;width:100%;height:100%;border:0;border-radius:0;background:transparent}
+header .wrap{position:relative;max-width:920px;margin:0 auto}
+.tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#c8ddf5;background:rgba(200,221,245,.12);border:1px solid rgba(200,221,245,.3);padding:4px 10px;border-radius:999px;margin-bottom:12px}
+header h1{margin:0 0 8px;font-size:27px;line-height:1.2;letter-spacing:-.01em}
+header h1 span{color:#9fc0f0}
+header p{margin:0 0 16px;color:#c8ddf5;font-size:15px;max-width:620px}
+.stats{margin:0;padding:0}
+.stats div{display:inline-block;margin:0 8px 8px 0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:8px 12px;font-size:13px;color:#dfe9f8}
+.stats b{display:block;font-size:20px;color:#fff}
+nav{position:-webkit-sticky;position:sticky;top:0;z-index:5;background:rgba(238,242,250,.96);border-bottom:1px solid var(--line);padding:9px 12px;white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+nav a{display:inline-block;margin-right:6px;padding:6px 12px 6px 6px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--ink);text-decoration:none;font-size:14px;font-weight:600}
+nav a i{display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;color:#fff;font-style:normal;font-size:12px;margin-right:6px;vertical-align:1px}
+main{max-width:920px;margin:0 auto;padding:6px 14px 40px}
+section{position:relative;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px 16px 18px;margin:22px 0;box-shadow:0 6px 24px rgba(11,24,56,.07);overflow:hidden}
+section:before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:var(--c)}
+.head{display:table;width:100%;margin-bottom:10px}
+.badge{display:table-cell;width:52px;vertical-align:middle}
+.badge span{display:block;width:44px;height:44px;border-radius:14px;background:var(--c);color:#fff;text-align:center;line-height:44px;font-size:22px;box-shadow:0 4px 12px rgba(11,24,56,.18)}
+.head h2{display:table-cell;vertical-align:middle;font-size:19px;margin:0;line-height:1.3}
+.head h2 small{display:block;font-size:12px;color:var(--c);font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+h3{font-size:13px;margin:18px 0 8px;color:var(--c);text-transform:uppercase;letter-spacing:.06em}
+.q{background:#f5f8fd;border:1px dashed #c9d6ec;padding:10px 12px;border-radius:12px;font-size:14px;color:var(--muted)}
+.q:before{content:"Сұрақ: ";font-weight:700;color:var(--ink)}
+.f{display:block;background:#fff;border:1.5px solid var(--c);border-radius:12px;padding:10px 12px;margin:10px 0;font-weight:700;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:14.5px;overflow-x:auto;color:var(--ink);box-shadow:inset 4px 0 0 var(--c)}
+canvas{display:block;width:100%;background:#fbfdff;border:1px solid var(--line);border-radius:14px;touch-action:manipulation}
+.cap{font-size:12.5px;color:var(--muted);margin:5px 2px 0}
+.ctrl{margin:12px 0 4px;background:#f7f9fd;border:1px solid var(--line);border-radius:14px;padding:6px 12px 12px}
 .row{margin:8px 0}
 .row label{display:block;font-size:14px;font-weight:600;margin-bottom:2px}
-.row label b{color:var(--sky)}
-input[type=range]{width:100%;margin:4px 0}
-select{font-size:15px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);width:100%}
-.btn{display:inline-block;border:0;border-radius:10px;background:var(--sky);color:#fff;font-weight:700;font-size:15px;padding:10px 16px;margin:6px 6px 0 0;cursor:pointer;-webkit-appearance:none}
-.btn.alt{background:#fff;color:var(--sky);border:1.5px solid var(--sky)}
-.btn.on{background:var(--plum);color:#fff;border-color:var(--plum)}
+.row label b{color:var(--c)}
+input[type=range]{width:100%;margin:6px 0;accent-color:var(--c)}
+select{font-size:15px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);width:100%}
+.btn{display:inline-block;border:0;border-radius:12px;background:var(--c);color:#fff;font-weight:700;font-size:15px;padding:10px 16px;margin:8px 6px 0 0;cursor:pointer;-webkit-appearance:none;box-shadow:0 3px 10px rgba(11,24,56,.15)}
+.btn.alt{background:#fff;color:var(--c);border:1.5px solid var(--c);box-shadow:none}
+.btn.on{background:var(--ink);color:#fff}
 .out{display:block;margin-top:10px}
-.out .cell{display:inline-block;vertical-align:top;min-width:46%;margin:4px 2% 4px 0;background:#f6f9fe;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.out .cell{display:inline-block;vertical-align:top;width:48%;margin:4px 1% 4px 0;background:#fff;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:12px;padding:8px 10px}
 .out .k{display:block;font-size:12px;color:var(--muted)}
-.out .v{display:block;font-size:18px;font-weight:800}
-.proof{margin-top:12px;background:#eefaf3;border:1px solid #bfe5cf;border-radius:10px;padding:10px 12px;font-size:14.5px}
+.out .v{display:block;font-size:19px;font-weight:800}
+.proof{margin-top:14px;background:#eefaf3;border:1px solid #bfe5cf;border-radius:14px;padding:11px 13px;font-size:14.5px}
 .proof b{color:var(--green)}
-.warn{background:#fff6e5;border-color:#f1d9a8}
-table{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}
-td,th{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
-th{background:#eef3fa}
+.quiz{margin-top:14px;border:1.5px solid var(--line);border-radius:14px;padding:12px}
+.quiz p{margin:0 0 8px;font-weight:700}
+.quiz p:before{content:"✎ Өзіңді тексер: ";color:var(--c)}
+.quiz button{display:block;width:100%;text-align:left;font-size:15px;padding:10px 12px;margin:6px 0;border-radius:10px;border:1.5px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;-webkit-appearance:none}
+.quiz button.ok{background:#e6f6ec;border-color:#2e8b57}
+.quiz button.no{background:#fdecea;border-color:#c0392b}
+.quiz .ex{display:none;font-size:14px;color:var(--muted);margin-top:6px}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:10px 0}
+td,th{border:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+th{background:#f3f6fb}
 .tw{overflow-x:auto}
+.two canvas{margin-top:8px}
 footer{text-align:center;color:var(--muted);font-size:13px;padding:10px 16px 30px}
-@media (min-width:700px){header h1{font-size:30px}h2{font-size:21px}.out .cell{min-width:23%}}
+@media (min-width:720px){header{padding:48px 16px 40px}header h1{font-size:36px}.head h2{font-size:22px}.out .cell{width:23.5%}}
 </style>
 </head>
 <body>
-<header><div class="wrap">
-<h1>Физиканы оқыту әдістемесі: II нұсқа</h1>
-<p>7 сұрақтың әрқайсысын тәжірибе-модельмен өзіңіз тексеріп, дәлелдей аласыз. Жүгірткіні жылжытып, нәтижені бақылаңыз.</p>
+<header><canvas id="hero"></canvas><div class="wrap">
+<div class="tag">Физиканы оқыту әдістемесі · II нұсқа</div>
+<h1>7 сұрақ — <span>7 тірі дәлелдеу</span></h1>
+<p>Әр сұрақтың теориясы, формуласы, интерактивті моделі, тірі графигі және өзіңді тексеретін сұрағы. Жүгірткіні жылжыт, батырманы бас — заңдылықты өз көзіңмен көр.</p>
+<div class="stats"><div><b>7</b>модель</div><div><b>5</b>тірі график</div><div><b id="score">0/7</b>тест</div></div>
 </div></header>
 <nav>
-<a href="#q1">1 Қозғалыс</a><a href="#q2">2 Қысым</a><a href="#q3">3 Жылу</a><a href="#q4">4 Ток</a><a href="#q5">5 Кинематика</a><a href="#q6">6 Тартылыс</a><a href="#q7">7 Энергия</a>
+<a href="#q1"><i style="background:#3a60a0">1</i>Қозғалыс</a><a href="#q2"><i style="background:#1f8fb5">2</i>Қысым</a><a href="#q3"><i style="background:#e0662a">3</i>Жылу</a><a href="#q4"><i style="background:#c79a12">4</i>Ток</a><a href="#q5"><i style="background:#4d4177">5</i>Кинематика</a><a href="#q6"><i style="background:#6a4fb3">6</i>Тартылыс</a><a href="#q7"><i style="background:#2e8b57">7</i>Энергия</a>
 </nav>
 <main>
 
 <!-- 1 -->
-<section id="q1">
-<h2><span class="num">1</span>Бірқалыпты және бірқалыпсыз қозғалыс</h2>
+<section id="q1" style="--c:#3a60a0">
+<div class="head"><div class="badge"><span>🚗</span></div><h2><small>1 · Кинематика</small>Бірқалыпты және бірқалыпсыз қозғалыс</h2></div>
 <div class="q">Автомобиль жолдың бірінші бөлігінде бірқалыпты, екіншісінде бірқалыпсыз қозғалды. Айырмашылығын түсіндіріп, жол мен орын ауыстырудың неге бірдей емес екенін мысалмен дәлелдеңіз.</div>
 <h3>Түйін</h3>
 <p><b>Бірқалыпты</b> қозғалыста дене кез келген тең уақыт аралықтарында тең жол жүреді: v = const. <b>Бірқалыпсызда</b> жылдамдық өзгереді, сондықтан орташа жылдамдық енгізіледі.</p>
@@ -80,17 +101,19 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:10px 16px 30p
 <div class="cell"><span class="k">Орын ауыстыру |s| (көк)</span><span class="v" id="o1s">0 м</span></div>
 </div>
 <div class="proof" id="p1"><b>Не байқаймыз:</b> түзу бөлікте v графигі көлденең түзу (бірқалыпты), төбеде v өзгереді (бірқалыпсыз). Төбеге шыққан сайын L мен |s| ажырайды: L &gt; |s|. «Бару-қайту» батырмасын басыңыз: автомобиль орнына оралғанда L екі еселенеді, ал s = 0.</div>
+<div class="quiz"><p>Автомобиль 10 км барып, сол жолмен қайтып оралды. Орын ауыстыруы қанша?</p><button data-ok="0">20 км</button><button data-ok="0">10 км</button><button data-ok="1">0</button><div class="ex">Бастапқы және соңғы нүкте бір жерде, сондықтан s = 0. Ал жол L = 20 км.</div></div>
 </section>
 
 <!-- 2 -->
-<section id="q2">
-<h2><span class="num">2</span>Сұйықтың қысымы</h2>
+<section id="q2" style="--c:#1f8fb5">
+<div class="head"><div class="badge"><span>💧</span></div><h2><small>2 · Гидростатика</small>Сұйықтың қысымы</h2></div>
 <div class="q">Сұйықтың қысымы қандай шамаларға тәуелді? Формуласын қорытып, биіктік пен тығыздық өзгергенде қысымның қалай өзгеретінін түсіндіріңіз.</div>
 <h3>Қорыту</h3>
 <p>Табан ауданы S, биіктігі h бағанның көлемі V = S·h, массасы m = ρ·S·h, салмағы F = ρ·g·S·h. Қысым p = F/S, ал S қысқарады:</p>
 <span class="f">p = ρ·g·h</span>
 <h3>Дәлелдеу: пішіні әртүрлі үш ыдыс</h3>
 <canvas id="c2" height="250"></canvas>
+<canvas id="c2g" height="170" style="margin-top:8px"></canvas><div class="cap">p(h) графигі: түзу — тура пропорционалдық. Нүкте — қазіргі мәніңіз; сұр сызықтар — басқа сұйықтар.</div>
 <div class="ctrl">
 <div class="row"><label>Сұйық биіктігі h = <b id="l2h">5,0 м</b></label><input type="range" id="s2h" min="0.5" max="10" step="0.5" value="5"></div>
 <div class="row"><label>Сұйық</label><select id="s2r"><option value="800">Керосин — 800 кг/м³</option><option value="1000" selected>Су — 1000 кг/м³</option><option value="1030">Теңіз суы — 1030 кг/м³</option><option value="13600">Сынап — 13 600 кг/м³</option></select></div>
@@ -100,11 +123,12 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:10px 16px 30p
 <div class="cell"><span class="k">Атмосферамен бірге</span><span class="v" id="o2pa">150 кПа</span></div>
 </div>
 <div class="proof"><b>Не байқаймыз:</b> үш ыдыстағы сұйық мөлшері (салмағы) әртүрлі, бірақ h бірдей болса, түбіндегі қысым <b>бірдей</b> — пішінге тәуелсіз. h-ты 2 есе арттырсаңыз p 2 есе артады; судан сынапқа ауыссаңыз p 13,6 есе артады.</div>
+<div class="quiz"><p>Тереңдік 2 есе артса, сұйық қысымы қалай өзгереді?</p><button data-ok="1">2 есе артады</button><button data-ok="0">4 есе артады</button><button data-ok="0">өзгермейді</button><div class="ex">p = ρgh — h-қа тура пропорционал.</div></div>
 </section>
 
 <!-- 3 -->
-<section id="q3">
-<h2><span class="num">3</span>Жылу берілудің үш түрі</h2>
+<section id="q3" style="--c:#e0662a">
+<div class="head"><div class="badge"><span>🔥</span></div><h2><small>3 · Жылу</small>Жылу берілудің үш түрі</h2></div>
 <div class="q">Жылуөткізгіштік, конвекция және сәуле шығару механизмдерін салыстырып, мысал келтіріп, айырмашылықтарын түсіндіріңіз.</div>
 <h3>Дәлелдеу: ортаны алып тастап көріңіз</h3>
 <canvas id="c3" height="240"></canvas>
@@ -117,17 +141,19 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:10px 16px 30p
 <tr><td>Орта</td><td>қатты, сұйық, газ</td><td>тек сұйық, газ</td><td>вакуумда да</td></tr>
 <tr><td>Мысал</td><td>металл қасық қызады</td><td>батарея, шәйнек</td><td>Күн, от</td></tr>
 </table></div>
+<div class="quiz"><p>Күн жылуы Жерге қалай жетеді?</p><button data-ok="0">жылуөткізгіштік</button><button data-ok="0">конвекция</button><button data-ok="1">сәуле шығару</button><div class="ex">Күн мен Жер арасы — вакуум. Тек сәуле шығару ортасыз жүреді.</div></div>
 </section>
 
 <!-- 4 -->
-<section id="q4">
-<h2><span class="num">4</span>Тұрақты ток, ток көзі және ЭҚК</h2>
+<section id="q4" style="--c:#c79a12">
+<div class="head"><div class="badge"><span>⚡</span></div><h2><small>4 · Электр</small>Тұрақты ток, ток көзі және ЭҚК</h2></div>
 <div class="q">Тұрақты электр тогының пайда болуы мен сақталуы үшін қандай шарттар қажет? Ток көзі мен ЭҚК-тің рөлін түсіндіріңіз.</div>
 <h3>Түйін</h3>
 <p>Шарттар: 1) еркін заряд тасушылар; 2) өткізгіште электр өрісі (кернеу); 3) тұйық тізбек; 4) өрісті ұстап тұратын ток көзі. Ток көзінде бөгде күштер зарядтарды «−»-тен «+»-ке тасиды; олардың бірлік зарядқа жұмысы — ЭҚК.</p>
 <span class="f">ε = A_бөгде / q &nbsp;&nbsp;|&nbsp;&nbsp; I = ε / (R + r)</span>
 <h3>Дәлелдеу: шарттарды бұзып көріңіз</h3>
 <canvas id="c4" height="230"></canvas>
+<canvas id="c4g" height="170" style="margin-top:8px"></canvas><div class="cap">I(R) графигі: R артқан сайын ток азаяды (гипербола). Нүкте — қазіргі R.</div>
 <div class="ctrl">
 <button class="btn on" id="b4key">Кілт: тұйық</button><button class="btn on" id="b4src">Ток көзі: бар</button>
 <div class="row"><label>ЭҚК ε = <b id="l4e">4,5 В</b></label><input type="range" id="s4e" min="0" max="12" step="0.5" value="4.5"></div>
@@ -141,11 +167,12 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:10px 16px 30p
 <div class="cell"><span class="k">Тексеріс U + Ir</span><span class="v" id="o4c">4,50 В = ε</span></div>
 </div>
 <div class="proof" id="p4"><b>Не байқаймыз:</b> кілтті ашсаңыз (тізбек тұйық емес) немесе ток көзін алсаңыз, зарядтар тоқтайды — I = 0. ЭҚК артса, ток артады; кез келген мәнде U + Ir = ε, яғни бөгде күштердің жұмысы сыртқы және ішкі бөлікке бөлінеді.</div>
+<div class="quiz"><p>Кілт ашылса (тізбек тұйық емес), ток күші қандай?</p><button data-ok="0">өзгермейді</button><button data-ok="1">нөлге тең</button><button data-ok="0">екі есе артады</button><div class="ex">Тұйық тізбек — тоқтың шарттарының бірі. Тізбек үзілсе, I = 0.</div></div>
 </section>
 
 <!-- 5 -->
-<section id="q5">
-<h2><span class="num">5</span>Кинематика мен динамика</h2>
+<section id="q5" style="--c:#4d4177">
+<div class="head"><div class="badge"><span>🛒</span></div><h2><small>5 · Механика</small>Кинематика мен динамика</h2></div>
 <div class="q">Кинематика мен динамиканың айырмашылығын түсіндіріңіз. Кинематикада қандай негізгі шамалар қарастырылады және олар өзара қалай байланысады?</div>
 <h3>Түйін</h3>
 <p><b>Кинематика</b> қозғалыстың <i>қалай</i> өтетінін сипаттайды (x, s, v, a, t), себебін қарастырмайды. <b>Динамика</b> <i>неге</i> өзгеретінін түсіндіреді — күш пен масса арқылы (Ньютон заңдары).</p>
@@ -165,17 +192,19 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:10px 16px 30p
 <div class="cell"><span class="k">Кинематика: x = at²/2</span><span class="v" id="o5x">0,0 м</span></div>
 </div>
 <div class="proof"><b>Не байқаймыз:</b> динамика тек бір шаманы — үдеуді — береді (a = F/m). Ары қарай кинематика сол үдеуден v мен x-ты табады: v(t) — түзу, x(t) — парабола. F = 2000 Н, m = 1000 кг болса, 5 с соңында v = 10 м/с, x = 25 м. F = 0 болса, a = 0 — арба қозғалмайды.</div>
+<div class="quiz"><p>Денеге әсер ететін тең әсерлі күш нөлге тең. Ол қалай қозғалады?</p><button data-ok="0">міндетті түрде тоқтайды</button><button data-ok="1">бірқалыпты түзу сызықты (немесе тыныштықта)</button><button data-ok="0">үдей береді</button><div class="ex">a = F/m = 0, сондықтан v = const (Ньютонның I заңы).</div></div>
 </section>
 
 <!-- 6 -->
-<section id="q6">
-<h2><span class="num">6</span>Бүкіләлемдік тартылыс заңы</h2>
+<section id="q6" style="--c:#6a4fb3">
+<div class="head"><div class="badge"><span>🪐</span></div><h2><small>6 · Гравитация</small>Бүкіләлемдік тартылыс заңы</h2></div>
 <div class="q">Заңды тұжырымдаңыз. Массалар мен арақашықтық өзгергенде тартылыс күші қалай өзгеретінін түсіндіріп, өрнегін жазыңыз.</div>
 <h3>Тұжырым</h3>
 <p>Кез келген екі дене массаларының көбейтіндісіне тура, арақашықтығының квадратына кері пропорционал күшпен тартылады.</p>
 <span class="f">F = G·m₁·m₂ / r², &nbsp; G = 6,67·10⁻¹¹ Н·м²/кг²</span>
 <h3>Дәлелдеу: массаны және арақашықтықты өзгертіңіз</h3>
 <canvas id="c6" height="210"></canvas>
+<canvas id="c6g" height="170" style="margin-top:8px"></canvas><div class="cap">F(r) графигі: r екі есе артса, F төрт есе кемиді (1/r²).</div>
 <div class="ctrl">
 <div class="row"><label>m₁ = <b id="l6a">1</b> × m₀</label><input type="range" id="s6a" min="1" max="4" step="1" value="1"></div>
 <div class="row"><label>m₂ = <b id="l6b">1</b> × m₀</label><input type="range" id="s6b" min="1" max="4" step="1" value="1"></div>
@@ -186,17 +215,19 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:10px 16px 30p
 <div class="cell"><span class="k">Есеп: m₁·m₂ / r²</span><span class="v" id="o6e">1·1 / 1² = 1</span></div>
 </div>
 <div class="proof"><b>Не байқаймыз:</b> m₁ 2 есе → F 2 есе; екі масса да 2 есе → F 4 есе; r 2 есе → F 4 есе азаяды; r 3 есе → 9 есе азаяды. Екі денеге түсетін күштер әрқашан тең және қарама-қарсы (Ньютонның III заңы). Мысал: 50 кг екі адам 1 м қашықтықта: F ≈ 1,7·10⁻⁷ Н.</div>
+<div class="quiz"><p>Денелердің арақашықтығы 3 есе артса, тартылыс күші...</p><button data-ok="0">3 есе кемиді</button><button data-ok="0">6 есе кемиді</button><button data-ok="1">9 есе кемиді</button><div class="ex">F ~ 1/r²: 3² = 9.</div></div>
 </section>
 
 <!-- 7 -->
-<section id="q7">
-<h2><span class="num">7</span>Механикалық энергия және оның сақталуы</h2>
+<section id="q7" style="--c:#2e8b57">
+<div class="head"><div class="badge"><span>⚽</span></div><h2><small>7 · Энергия</small>Механикалық энергия және оның сақталуы</h2></div>
 <div class="q">Механикалық энергияның қандай түрлері бар? Кинетикалық және потенциалдық энергиялардың бір-біріне айналуын түсіндіріп, сақталу заңын формула арқылы жазыңыз.</div>
 <h3>Түйін</h3>
 <span class="f">E_k = m·v²/2 &nbsp;|&nbsp; E_p = m·g·h &nbsp;|&nbsp; E_k + E_p = const</span>
 <p>Құлаған денеде потенциалдық энергия кинетикалыққа айналады, жоғары лақтырылғанда — керісінше. Үйкеліс болмаса, қосындысы тұрақты.</p>
 <h3>Дәлелдеу: допты тастаңыз</h3>
 <canvas id="c7" height="260"></canvas>
+<canvas id="c7g" height="170" style="margin-top:8px"></canvas><div class="cap">Энергияның биіктікке тәуелділігі: E_p (көк) кемиді, E_k (сарғыш) өседі, қосындысы (жасыл) — көлденең түзу.</div>
 <div class="ctrl">
 <div class="row"><label>Биіктік h = <b id="l7h">20 м</b></label><input type="range" id="s7h" min="5" max="50" step="5" value="20"></div>
 <div class="row"><label>Масса m = <b id="l7m">2 кг</b></label><input type="range" id="s7m" min="1" max="10" step="1" value="2"></div>
@@ -209,6 +240,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:10px 16px 30p
 <div class="cell"><span class="k">Қосынды</span><span class="v" id="o7s">392 Дж</span></div>
 </div>
 <div class="proof"><b>Не байқаймыз:</b> құлау кезінде көк баған (E_p) кішірейіп, сарғыш (E_k) дәл сонша өседі — қосынды өзгермейді. Жерге жеткенде v = √(2gh): h = 20 м болса v ≈ 19,8 м/с. Ауа кедергісін қоссаңыз, механикалық энергияның бір бөлігі жылуға (Q) кетеді, бірақ толық энергия бәрібір сақталады.</div>
+<div class="quiz"><p>Үйкеліссіз құлаған дене биіктіктің жартысына жеткенде...</p><button data-ok="1">E_k = E_p</button><button data-ok="0">E_k = 0</button><button data-ok="0">E_p = 0</button><div class="ex">Жартысында E_p = mgh/2, демек қалған mgh/2 кинетикалыққа айналған.</div></div>
 </section>
 </main>
 <footer>Физиканы оқыту әдістемесі: жеке сұрақтар · II нұсқа · g = 9,8 м/с²</footer>
@@ -221,6 +253,20 @@ function fmt(x,d){var s=x.toFixed(d);return s.replace('.',',');}
 function big(x){var s=Math.round(x).toString();return s.replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
 function setup(c){var dpr=window.devicePixelRatio||1;var w=c.clientWidth,h=parseInt(c.getAttribute('height'),10);c.width=w*dpr;c.height=h*dpr;c.style.height=h+'px';var x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return {x:x,w:w,h:h};}
 function arrow(x,x1,y1,x2,y2,col,lw){var a=Math.atan2(y2-y1,x2-x1),hl=8+lw;x.strokeStyle=col;x.fillStyle=col;x.lineWidth=lw;x.beginPath();x.moveTo(x1,y1);x.lineTo(x2-Math.cos(a)*hl*0.6,y2-Math.sin(a)*hl*0.6);x.stroke();x.beginPath();x.moveTo(x2,y2);x.lineTo(x2-hl*Math.cos(a-0.4),y2-hl*Math.sin(a-0.4));x.lineTo(x2-hl*Math.cos(a+0.4),y2-hl*Math.sin(a+0.4));x.closePath();x.fill();}
+
+function plot(c,o){var K=setup(c),x=K.x,w=K.w,h=K.h,l=44,r=12,t=14,b=h-28;x.clearRect(0,0,w,h);
+ function X(v){return l+(w-l-r)*(v-o.x0)/(o.x1-o.x0);}function Y(v){return b-(b-t)*(v-o.y0)/(o.y1-o.y0);}
+ x.font='11px sans-serif';x.lineWidth=1;
+ for(var i=0;i<=4;i++){var yv=o.y0+(o.y1-o.y0)*i/4,yy=Y(yv);x.strokeStyle='#eef1f6';x.beginPath();x.moveTo(l,yy);x.lineTo(w-r,yy);x.stroke();x.fillStyle='#56627a';x.textAlign='right';x.fillText(o.fy?o.fy(yv):fmt(yv,yv<10&&yv%1?1:0),l-5,yy+4);}
+ for(var j=0;j<=4;j++){var xv=o.x0+(o.x1-o.x0)*j/4;x.textAlign='center';x.fillStyle='#56627a';x.fillText(o.fx?o.fx(xv):fmt(xv,xv%1?1:0),X(xv),b+14);}
+ x.strokeStyle='#9aa7b8';x.beginPath();x.moveTo(l,t);x.lineTo(l,b);x.lineTo(w-r,b);x.stroke();
+ x.textAlign='left';x.fillStyle='#0b1838';x.font='bold 11px sans-serif';x.fillText(o.yl,4,10);x.textAlign='right';x.fillText(o.xl,w-r,h-2);x.textAlign='left';
+ for(var k=0;k<o.s.length;k++){var S=o.s[k];x.strokeStyle=S.c;x.lineWidth=S.w||2.5;if(x.setLineDash)x.setLineDash(S.d||[]);x.beginPath();var first=true;
+  for(var n=0;n<=120;n++){var xv2=o.x0+(o.x1-o.x0)*n/120,yv2=S.f(xv2);if(!isFinite(yv2))continue;yv2=Math.max(o.y0,Math.min(o.y1*1.05,yv2));if(first){x.moveTo(X(xv2),Y(yv2));first=false;}else x.lineTo(X(xv2),Y(yv2));}
+  x.stroke();if(x.setLineDash)x.setLineDash([]);if(S.lab){x.fillStyle=S.c;x.font='bold 11px sans-serif';var lx=S.lx!=null?S.lx:o.x1*0.98;x.textAlign='right';x.fillText(S.lab,X(lx),Math.max(t+10,Y(Math.min(o.y1,S.f(lx)))-6));x.textAlign='left';}}
+ if(o.p){for(var m=0;m<o.p.length;m++){var P=o.p[m];x.strokeStyle=P.c;x.lineWidth=1;if(x.setLineDash)x.setLineDash([3,3]);x.beginPath();x.moveTo(X(P.x),b);x.lineTo(X(P.x),Y(P.y));x.lineTo(l,Y(P.y));x.stroke();if(x.setLineDash)x.setLineDash([]);
+  x.fillStyle='#fff';x.beginPath();x.arc(X(P.x),Y(P.y),6.5,0,7);x.fill();x.fillStyle=P.c;x.beginPath();x.arc(X(P.x),Y(P.y),4.5,0,7);x.fill();
+  if(P.t){x.font='bold 12px sans-serif';var tx=X(P.x)+9,ty=Y(P.y)-8;if(tx>w-90){x.textAlign='right';tx=X(P.x)-9;}x.fillText(P.t,tx,Math.max(t+12,ty));x.textAlign='left';}}}}
 var raf=window.requestAnimationFrame||function(f){return setTimeout(function(){f(Date.now());},16);};
 var C={};
 
@@ -283,7 +329,10 @@ var C={};
    arrow(x,cx,base-16,cx,base-2,'#c0392b',2);x.textAlign='left';}
   x.strokeStyle='#1f5aa6';x.setLineDash([5,4]);x.lineWidth=1.2;x.beginPath();x.moveTo(6,lev);x.lineTo(w-6,lev);x.stroke();x.setLineDash([]);
   x.fillStyle='#1f5aa6';x.font='bold 13px sans-serif';x.fillText('h = '+fmt(h,1)+' м',8,lev-6);
-  var p=rho*G*h;$('l2h').innerHTML=fmt(h,1)+' м';$('o2p').innerHTML=fmt(p/1000,p<100000?1:0)+' кПа';$('o2pa').innerHTML=fmt((p+101300)/1000,0)+' кПа';}
+  var p=rho*G*h;$('l2h').innerHTML=fmt(h,1)+' м';$('o2p').innerHTML=fmt(p/1000,p<100000?1:0)+' кПа';$('o2pa').innerHTML=fmt((p+101300)/1000,0)+' кПа';
+  var L=[[800,'#d9a441'],[1000,'#1f8fb5'],[13600,'#8e95a3']],S=[];for(var q=0;q<3;q++){(function(rr,cc){S.push({f:function(hh){return rr*G*hh/1000;},c:rr===rho?cc:'#d5dbe5',w:rr===rho?3:1.5,lab:rr===rho?(rr===13600?'сынап':rr===800?'керосин':'су'):''});})(L[q][0],L[q][1]);}
+  if(rho===1030)S.push({f:function(hh){return 1030*G*hh/1000;},c:'#1f8fb5',w:3,lab:'теңіз суы'});
+  var ym=rho>5000?1400:120;plot($('c2g'),{x0:0,x1:10,y0:0,y1:ym,xl:'h, м',yl:'p, кПа',s:S,p:[{x:h,y:p/1000,c:'#c0392b',t:fmt(p/1000,p<100000?1:0)+' кПа'}]});}
  $('s2h').oninput=draw;$('s2h').onchange=draw;$('s2r').onchange=draw;C.r2=draw;draw();
 })();
 
@@ -320,11 +369,13 @@ var C={};
 
 /* ===== 4 ===== */
 (function(){
- var c=$('c4'),closed=true,src=true,ph=0,cur=0;
+ var c=$('c4'),closed=true,src=true,ph=0,cur=0,lastKey='';
  function calc(){var e=parseFloat($('s4e').value),R=parseFloat($('s4R').value),r=parseFloat($('s4r').value);var I=(closed&&src)?e/(R+r):0;
   $('l4e').innerHTML=fmt(e,1)+' В';$('l4R').innerHTML=fmt(R,1)+' Ом';$('l4r').innerHTML=fmt(r,1)+' Ом';
   $('o4I').innerHTML=fmt(I,2)+' А';$('o4U').innerHTML=fmt(I*R,2)+' В';$('o4u').innerHTML=fmt(I*r,2)+' В';
-  $('o4c').innerHTML=(closed&&src)?fmt(I*R+I*r,2)+' В = ε':'I = 0';return I;}
+  $('o4c').innerHTML=(closed&&src)?fmt(I*R+I*r,2)+' В = ε':'I = 0';
+  var key=e+'|'+R+'|'+r+'|'+closed+'|'+src;if(key!==lastKey){lastKey=key;var on=closed&&src,mx=e/(0.5+r),ym=[1,2,4,8,12,16,20,24,28];for(var yi=0;yi<ym.length&&ym[yi]<mx;yi++);ym=ym[Math.min(yi,ym.length-1)];plot($('c4g'),{x0:0,x1:20,y0:0,y1:ym,xl:'R, Ом',yl:'I, А',fy:function(v){return fmt(v,v%1?1:0);},s:[{f:function(RR){return on?e/(RR+r):0;},c:'#c79a12',lab:on?'I = ε/(R+r)':'I = 0'}],p:[{x:R,y:I,c:'#c0392b',t:fmt(I,2)+' А'}]});}
+  return I;}
  function pos(s,L,x0,y0,x1,y1){var w=x1-x0,h=y1-y0,P=2*(w+h);s=((s%P)+P)%P;if(s<w)return[x0+s,y0];s-=w;if(s<h)return[x1,y0+s];s-=h;if(s<w)return[x1-s,y1];s-=w;return[x0,y1-s];}
  function frame(){var K=setup(c),x=K.x,w=K.w,h=K.h,I=calc();x.clearRect(0,0,w,h);var x0=30,y0=40,x1=w-30,y1=h-50;
   cur+= (I-cur)*0.08; ph+=cur*1.6;
@@ -393,7 +444,8 @@ var C={};
   x.fillStyle='#0b1838';x.font='bold 13px sans-serif';x.fillText('m₁',x1,cy+5);x.fillText('m₂',x2,cy+5);
   var L=12+24*Math.sqrt(k);arrow(x,x1,cy-r1-10,x1+L,cy-r1-10,'#c0392b',3);arrow(x,x2,cy-r2-24,x2-L,cy-r2-24,'#1f5aa6',3);
   x.fillStyle='#c0392b';x.fillText('F',x1+L/2,cy-r1-16);x.fillStyle='#1f5aa6';x.fillText('F',x2-L/2,cy-r2-30);
-  x.fillStyle='#0b1838';x.font='bold 14px sans-serif';x.fillText('F = '+(Math.abs(k-1)<1e-9?'F₀':fmt(k,k%1?3:0).replace(/,?0+$/,'')+'·F₀'),w/2,22);x.textAlign='left';}
+  x.fillStyle='#0b1838';x.font='bold 14px sans-serif';x.fillText('F = '+(Math.abs(k-1)<1e-9?'F₀':fmt(k,k%1?3:0).replace(/,?0+$/,'')+'·F₀'),w/2,22);x.textAlign='left';
+  var pr=a*b;plot($('c6g'),{x0:1,x1:4,y0:0,y1:Math.max(1,pr),xl:'r / r₀',yl:'F / F₀',fy:function(v){return fmt(v,v%1?2:0);},s:[{f:function(rr){return 1/(rr*rr);},c:'#d5dbe5',w:1.5,lab:pr>1?'m₁m₂ = 1':'',lx:1.6},{f:function(rr){return pr/(rr*rr);},c:'#6a4fb3',lab:'F ~ 1/r²',lx:3.2}],p:[{x:r,y:k,c:'#c0392b',t:fmt(k,k%1?2:0).replace(',00','')+'·F₀'}]});}
  var ids=['s6a','s6b','s6r'];for(var i=0;i<3;i++){$(ids[i]).oninput=draw;$(ids[i]).onchange=draw;}C.r6=draw;draw();
 })();
 
@@ -414,6 +466,7 @@ var C={};
    x.fillStyle='#0b1838';x.font='bold 12px sans-serif';x.textAlign='center';x.fillText(names[i],X+bw/2,gy+16);x.textAlign='left';}
   x.strokeStyle='#2e8b57';x.setLineDash([5,4]);x.beginPath();x.moveTo(lx-4,gy-E0*scale);x.lineTo(lx+4*(bw+10),gy-E0*scale);x.stroke();x.setLineDash([]);
   x.fillStyle='#2e8b57';x.font='11px sans-serif';x.fillText('E = '+big(E0)+' Дж',lx,gy-E0*scale-5);
+  plot($('c7g'),{x0:0,x1:h0,y0:0,y1:E0,xl:'биіктік h, м (құлау →)',yl:'E, Дж',fx:function(v){return fmt(h0-v,0);},fy:function(v){return big(v);},s:[{f:function(d){return m*G*(h0-d);},c:'#1f5aa6',lab:'E_p',lx:h0*0.18},{f:function(d){return m*G*d;},c:'#e08a1e',d:fr?[5,4]:[],lab:fr?'E_k (үйкеліссіз)':'E_k',lx:h0*0.95},{f:function(){return E0;},c:'#2e8b57',d:[6,4],lab:'Σ = '+big(E0)+' Дж',lx:h0*0.7}],p:[{x:h0-st.y,y:Ep,c:'#1f5aa6'},{x:h0-st.y,y:Ek,c:'#e08a1e'}]});
   $('o7p').innerHTML=big(Ep)+' Дж';$('o7k').innerHTML=big(Ek)+' Дж';$('o7q').innerHTML=big(Q)+' Дж';$('o7s').innerHTML=big(Ep+Ek+Q)+' Дж';}
  function step(){if(!st.run)return;var dt=0.004,m=M(),k=fr?0.035:0,h0=H();for(var i=0;i<9;i++){var a=G-k*st.v*st.v/m;st.y-=st.v*dt+a*dt*dt/2;st.v+=a*dt;if(st.y<=0){st.y=0;st.run=false;}
    if(!fr){st.v=Math.sqrt(2*G*(h0-st.y));st.Q=0;}else{st.Q=Math.max(0,m*G*h0-m*G*st.y-m*st.v*st.v/2);}if(!st.run)break;}draw();if(st.run)raf(step);}
@@ -422,6 +475,18 @@ var C={};
  $('s7h').oninput=reset;$('s7m').oninput=reset;C.r7=draw;reset();
 })();
 
+
+/* hero */
+(function(){var c=$('hero');if(!c)return;var st=[],t=0;for(var i=0;i<70;i++)st.push([Math.random(),Math.random(),Math.random()*1.4+0.3]);
+ function fr(){var K=setup2(c),x=K.x,w=K.w,h=K.h;t+=0.01;x.clearRect(0,0,w,h);for(var i=0;i<st.length;i++){x.fillStyle='rgba(200,221,245,'+(0.35+0.35*Math.sin(t*3+i))+')';x.beginPath();x.arc(st[i][0]*w,st[i][1]*h,st[i][2],0,7);x.fill();}
+  var nar=w<720,cx=nar?w-46:w-150,cy=nar?h-52:h*0.5,R1=nar?34:Math.min(110,h*0.38);x.strokeStyle='rgba(200,221,245,0.25)';x.lineWidth=1;x.beginPath();x.ellipse?x.ellipse(cx,cy,R1,R1*0.42,-0.3,0,7):x.arc(cx,cy,R1,0,7);x.stroke();
+  x.fillStyle='#ffcc55';x.beginPath();x.arc(cx,cy,nar?6:10,0,7);x.fill();var px=cx+R1*Math.cos(t*2)*Math.cos(-0.3)-R1*0.42*Math.sin(t*2)*Math.sin(-0.3),py=cy+R1*Math.cos(t*2)*Math.sin(-0.3)+R1*0.42*Math.sin(t*2)*Math.cos(-0.3);x.fillStyle='#88a5e0';x.beginPath();x.arc(px,py,nar?4:6,0,7);x.fill();raf(fr);}
+ function setup2(c){var dpr=window.devicePixelRatio||1,w=c.parentNode.clientWidth,h=c.parentNode.clientHeight;if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){c.width=w*dpr;c.height=h*dpr;}var x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return{x:x,w:w,h:h};}
+ raf(fr);})();
+/* quiz */
+(function(){var qs=document.querySelectorAll('.quiz'),score=0,done=0;
+ for(var i=0;i<qs.length;i++){(function(q){var bs=q.getElementsByTagName('button'),ans=false;for(var j=0;j<bs.length;j++){bs[j].onclick=function(){if(ans)return;ans=true;var ok=this.getAttribute('data-ok')==='1';this.className=ok?'ok':'no';for(var k=0;k<bs.length;k++){if(bs[k].getAttribute('data-ok')==='1')bs[k].className='ok';}
+  q.querySelector('.ex').style.display='block';q.querySelector('.ex').innerHTML=(ok?'<b style="color:#2e8b57">Дұрыс!</b> ':'<b style="color:#c0392b">Қате.</b> ')+q.querySelector('.ex').innerHTML;if(ok)score++;done++;$('score').innerHTML=score+'/7';};}})(qs[i]);}})();
 var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){for(var k in C){C[k]();}},150);});
 })();
 </script>
