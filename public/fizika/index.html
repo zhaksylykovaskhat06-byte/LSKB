@@ -69,6 +69,8 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:10px 16px 30p
 </style>
 </head>
 <body>
+<div id="err" style="display:none;position:fixed;left:8px;right:8px;bottom:8px;z-index:99;background:#fdecea;color:#7a1f16;border:1px solid #c0392b;border-radius:10px;padding:8px 10px;font-size:12px"></div>
+<script>window.onerror=function(m,u,l,c){var e=document.getElementById('err');if(e){e.style.display='block';e.innerHTML='Қате: '+m+' (жол '+l+')';}};</script>
 <header><canvas id="hero"></canvas><div class="wrap">
 <div class="tag">Физиканы оқыту әдістемесі · II нұсқа</div>
 <h1>7 сұрақ — <span>7 тірі дәлелдеу</span></h1>
@@ -251,7 +253,8 @@ var G=9.8;
 function $(id){return document.getElementById(id);}
 function fmt(x,d){var s=x.toFixed(d);return s.replace('.',',');}
 function big(x){var s=Math.round(x).toString();return s.replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
-function setup(c){var dpr=window.devicePixelRatio||1;var w=c.clientWidth,h=parseInt(c.getAttribute('height'),10);c.width=w*dpr;c.height=h*dpr;c.style.height=h+'px';var x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return {x:x,w:w,h:h};}
+function setup(c){var dpr=Math.min(2,window.devicePixelRatio||1);if(!c._h){c._h=parseInt(c.getAttribute('height'),10);c.style.height=c._h+'px';}var w=c.clientWidth||c.parentNode.clientWidth||320,h=c._h,W=Math.round(w*dpr),H=Math.round(h*dpr);if(c.width!==W||c.height!==H){c.width=W;c.height=H;}if(!c._x)c._x=c.getContext('2d');var x=c._x;x.setTransform(dpr,0,0,dpr,0,0);return {x:x,w:w,h:h};}
+function vis(c){var r=c.getBoundingClientRect(),vh=window.innerHeight||document.documentElement.clientHeight;return r.bottom>-50&&r.top<vh+50;}
 function arrow(x,x1,y1,x2,y2,col,lw){var a=Math.atan2(y2-y1,x2-x1),hl=8+lw;x.strokeStyle=col;x.fillStyle=col;x.lineWidth=lw;x.beginPath();x.moveTo(x1,y1);x.lineTo(x2-Math.cos(a)*hl*0.6,y2-Math.sin(a)*hl*0.6);x.stroke();x.beginPath();x.moveTo(x2,y2);x.lineTo(x2-hl*Math.cos(a-0.4),y2-hl*Math.sin(a-0.4));x.lineTo(x2-hl*Math.cos(a+0.4),y2-hl*Math.sin(a+0.4));x.closePath();x.fill();}
 
 function plot(c,o){var K=setup(c),x=K.x,w=K.w,h=K.h,l=44,r=12,t=14,b=h-28;x.clearRect(0,0,w,h);
@@ -267,7 +270,7 @@ function plot(c,o){var K=setup(c),x=K.x,w=K.w,h=K.h,l=44,r=12,t=14,b=h-28;x.clea
  if(o.p){for(var m=0;m<o.p.length;m++){var P=o.p[m];x.strokeStyle=P.c;x.lineWidth=1;if(x.setLineDash)x.setLineDash([3,3]);x.beginPath();x.moveTo(X(P.x),b);x.lineTo(X(P.x),Y(P.y));x.lineTo(l,Y(P.y));x.stroke();if(x.setLineDash)x.setLineDash([]);
   x.fillStyle='#fff';x.beginPath();x.arc(X(P.x),Y(P.y),6.5,0,7);x.fill();x.fillStyle=P.c;x.beginPath();x.arc(X(P.x),Y(P.y),4.5,0,7);x.fill();
   if(P.t){x.font='bold 12px sans-serif';var tx=X(P.x)+9,ty=Y(P.y)-8;if(tx>w-90){x.textAlign='right';tx=X(P.x)-9;}x.fillText(P.t,tx,Math.max(t+12,ty));x.textAlign='left';}}}}
-var raf=window.requestAnimationFrame||function(f){return setTimeout(function(){f(Date.now());},16);};
+function raf(f){if(window.requestAnimationFrame){return window.requestAnimationFrame(f);}return setTimeout(function(){f(Date.now());},16);}
 var C={};
 
 /* ===== 1 ===== */
@@ -341,7 +344,7 @@ var C={};
  var c=$('c3'),vac=false,t=0,rod=[],parts=[],waves=[],absorb=0,K;
  function reset(){vac=false;rod=[];for(var i=0;i<9;i++)rod.push(i===0?1:0);parts=[];for(var j=0;j<36;j++)parts.push({L:j%2,th:Math.random()*6.28,f:0.55+0.45*Math.random(),T:0.3});waves=[];absorb=0;$('b3vac').className='btn';$('b3vac').innerHTML='Вакуум жасау (бөлшектерді алып тастау)';}
  function heat(T){var r=Math.round(60+195*T),g=Math.round(120+60*(1-T)),b=Math.round(230*(1-T)+30);return 'rgb('+r+','+g+','+b+')';}
- function frame(){K=setup(c);var x=K.x,w=K.w,h=K.h;t+=1;x.clearRect(0,0,w,h);var pw=w/3;
+ function frame(){if(!vis(c)){raf(frame);return;}K=setup(c);var x=K.x,w=K.w,h=K.h;t+=1;x.clearRect(0,0,w,h);var pw=w/3;
   x.fillStyle='#0b1838';x.font='bold 12px sans-serif';x.textAlign='center';x.fillText('Жылуөткізгіштік',pw/2,18);x.fillText('Конвекция',pw*1.5,18);x.fillText('Сәуле шығару',pw*2.5,18);
   // conduction
   var n=rod.length,cell=(pw-24)/n,y0=h/2-10;
@@ -377,7 +380,7 @@ var C={};
   var key=e+'|'+R+'|'+r+'|'+closed+'|'+src;if(key!==lastKey){lastKey=key;var on=closed&&src,mx=e/(0.5+r),ym=[1,2,4,8,12,16,20,24,28];for(var yi=0;yi<ym.length&&ym[yi]<mx;yi++);ym=ym[Math.min(yi,ym.length-1)];plot($('c4g'),{x0:0,x1:20,y0:0,y1:ym,xl:'R, Ом',yl:'I, А',fy:function(v){return fmt(v,v%1?1:0);},s:[{f:function(RR){return on?e/(RR+r):0;},c:'#c79a12',lab:on?'I = ε/(R+r)':'I = 0'}],p:[{x:R,y:I,c:'#c0392b',t:fmt(I,2)+' А'}]});}
   return I;}
  function pos(s,L,x0,y0,x1,y1){var w=x1-x0,h=y1-y0,P=2*(w+h);s=((s%P)+P)%P;if(s<w)return[x0+s,y0];s-=w;if(s<h)return[x1,y0+s];s-=h;if(s<w)return[x1-s,y1];s-=w;return[x0,y1-s];}
- function frame(){var K=setup(c),x=K.x,w=K.w,h=K.h,I=calc();x.clearRect(0,0,w,h);var x0=30,y0=40,x1=w-30,y1=h-50;
+ function frame(){if(!vis(c)){raf(frame);return;}var K=setup(c),x=K.x,w=K.w,h=K.h,I=calc();x.clearRect(0,0,w,h);var x0=30,y0=40,x1=w-30,y1=h-50;
   cur+= (I-cur)*0.08; ph+=cur*1.6;
   x.strokeStyle='#333';x.lineWidth=3;x.beginPath();
   x.moveTo(x0,y1);x.lineTo(x0,y0);x.lineTo(x1,y0);x.lineTo(x1,y1);x.lineTo(w/2+24,y1);x.moveTo(w/2-24,y1);
@@ -478,10 +481,10 @@ var C={};
 
 /* hero */
 (function(){var c=$('hero');if(!c)return;var st=[],t=0;for(var i=0;i<70;i++)st.push([Math.random(),Math.random(),Math.random()*1.4+0.3]);
- function fr(){var K=setup2(c),x=K.x,w=K.w,h=K.h;t+=0.01;x.clearRect(0,0,w,h);for(var i=0;i<st.length;i++){x.fillStyle='rgba(200,221,245,'+(0.35+0.35*Math.sin(t*3+i))+')';x.beginPath();x.arc(st[i][0]*w,st[i][1]*h,st[i][2],0,7);x.fill();}
+ function fr(){if(!vis(c)){raf(fr);return;}var K=setup2(c),x=K.x,w=K.w,h=K.h;t+=0.01;x.clearRect(0,0,w,h);for(var i=0;i<st.length;i++){x.fillStyle='rgba(200,221,245,'+(0.35+0.35*Math.sin(t*3+i))+')';x.beginPath();x.arc(st[i][0]*w,st[i][1]*h,st[i][2],0,7);x.fill();}
   var nar=w<720,cx=nar?w-46:w-150,cy=nar?h-52:h*0.5,R1=nar?34:Math.min(110,h*0.38);x.strokeStyle='rgba(200,221,245,0.25)';x.lineWidth=1;x.beginPath();x.ellipse?x.ellipse(cx,cy,R1,R1*0.42,-0.3,0,7):x.arc(cx,cy,R1,0,7);x.stroke();
   x.fillStyle='#ffcc55';x.beginPath();x.arc(cx,cy,nar?6:10,0,7);x.fill();var px=cx+R1*Math.cos(t*2)*Math.cos(-0.3)-R1*0.42*Math.sin(t*2)*Math.sin(-0.3),py=cy+R1*Math.cos(t*2)*Math.sin(-0.3)+R1*0.42*Math.sin(t*2)*Math.cos(-0.3);x.fillStyle='#88a5e0';x.beginPath();x.arc(px,py,nar?4:6,0,7);x.fill();raf(fr);}
- function setup2(c){var dpr=window.devicePixelRatio||1,w=c.parentNode.clientWidth,h=c.parentNode.clientHeight;if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){c.width=w*dpr;c.height=h*dpr;}var x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return{x:x,w:w,h:h};}
+ function setup2(c){var dpr=Math.min(2,window.devicePixelRatio||1),w=c.parentNode.clientWidth,h=c.parentNode.clientHeight;if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){c.width=w*dpr;c.height=h*dpr;}var x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return{x:x,w:w,h:h};}
  raf(fr);})();
 /* quiz */
 (function(){var qs=document.querySelectorAll('.quiz'),score=0,done=0;
