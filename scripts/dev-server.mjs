@@ -23,7 +23,7 @@ for (const f of ['.env.local', '.env']) {
 }
 
 const routes = {};
-for (const name of ['data', 'session', 'photo']) {
+for (const name of ['data', 'session', 'photo', 'aukcion']) {
   routes['/api/' + name] = (await import(pathToFileURL(path.join(ROOT, 'api', name + '.js')).href)).default;
 }
 

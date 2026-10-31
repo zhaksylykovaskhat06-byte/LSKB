@@ -268,7 +268,7 @@ function host(){
   let H=saved&&saved.v===2?saved:{v:2,phase:'lobby',i:0,left:BET,revealed:{},players:{}};
   H.id=ROOM;
   // players: {pid:{name, bets:{i:{v:'yes'|'no',stake}}}}
-  const conns=new Map(); let peer=null, tick=null, netState='Байланыс орнатылып жатыр…', netErr=false, tries=0;
+  const conns=new Map(); let tick=null, netState='Серверге қосылып жатыр…', netErr=false, tries=0;
   const save=()=>ls.set('ka_host',H);
   const joinUrl=()=>PLAY_URL;
 
@@ -277,51 +277,50 @@ function host(){
   function ranking(){return Object.entries(H.players).map(([pid,p])=>({pid,name:p.name,score:scoreOf(p)})).sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name))}
   function betsCount(){let n=0;for(const p of Object.values(H.players)) if(p.bets&&p.bets[H.i]) n++;return n}
 
-  function stateFor(pid){
-    const p=H.players[pid]; const rk=ranking(); const pos=rk.findIndex(r=>r.pid===pid);
-    const base={t:'state',phase:H.phase,i:H.i,n:LOTS.length,left:H.left,score:p?scoreOf(p):START,rank:pos+1,total:rk.length};
+  function publicState(){
+    const rk=ranking(); const ps={};
+    rk.forEach((r,k)=>{const p=H.players[r.pid]; ps[r.pid]={score:r.score,rank:k+1,total:rk.length,bet:p.bets&&p.bets[H.i]||null,delta:deltaOf(p,H.i)};});
+    const base={phase:H.phase,i:H.i,n:LOTS.length,left:H.left,ps};
     if(H.phase==='bet'||H.phase==='reveal'){
       const L=LOTS[H.i]; const rev=!!H.revealed[H.i];
-      const pub={type:L.type,fmt:L.fmt,topic:L.topic,ctx:L.ctx,q:L.q,opts:L.opts,left:L.left,right:L.right,student:L.student,double:!!L.double};
+      const pub={type:L.type,fmt:L.fmt,topic:L.topic,ctx:L.ctx||null,q:L.q,opts:L.opts||null,left:L.left||null,right:L.right||null,student:L.student,double:!!L.double};
       if(rev){pub.ans=L.ans;pub.ok=L.ok;pub.why=L.why;}
-      base.lot=pub; base.reveal=rev; base.bet=p&&p.bets?p.bets[H.i]||null:null; base.delta=p?deltaOf(p,H.i):null;
+      base.lot=pub; base.reveal=rev;
     }
     if(H.phase==='final') base.top=rk.slice(0,3).map(r=>({name:r.name,score:r.score}));
     return base;
   }
-  function send(pid){const c=conns.get(pid);if(c&&c.open){try{c.send(JSON.parse(JSON.stringify(stateFor(pid))))}catch(e){console.error('send failed',e);netState='Жіберу қатесі: '+(e&&e.message||e);netErr=true;}}}
-  function broadcast(){for(const pid of conns.keys()) send(pid)}
-
-  function startPeer(){
-    if(typeof Peer==='undefined'){netState='Телефон байланысы жүктелмеді. Ойынды телефонсыз жүргізе бересіз: тұрғандар — «Дұрыс», отырғандар — «Қате».';netErr=true;render();return;}
-    peer=new Peer(H.id,ICE);
-    peer.on('open',()=>{netState='Дайын. Кураторлар QR арқылы кіре алады.';netErr=false;tries=0;render();});
-    peer.on('disconnected',()=>{netState='Сигнал серверімен байланыс үзілді, қайта қосылып жатыр…';netErr=true;render();setTimeout(()=>{try{peer.reconnect()}catch(e){}},1500);});
-    peer.on('error',e=>{
-      if(e.type==='unavailable-id'&&tries<40){tries++;netState='Ойын бөлмесі әлі бос емес (бұрынғы экран жабылуын күтіп жатыр, '+tries+'/40). Басқа құрылғыда жүргізуші беті ашық тұрса, оны жабыңыз.';render();try{peer.destroy()}catch(_){}setTimeout(startPeer,3000);return;}
-      if(e.type==='peer-unavailable')return;
-      netState='Желі қатесі: '+e.type+'. Бетті жаңартып көріңіз.';netErr=true;render();
-    });
-    peer.on('connection',conn=>{
-      conn.on('data',m=>{
-        if(!m||typeof m!=='object')return;
-        if(m.t==='hello'&&typeof m.pid==='string'){
-          const pid=m.pid.slice(0,40), name=String(m.name||'').trim().slice(0,40)||'Куратор';
-          conns.set(pid,conn); conn._pid=pid;
-          if(!H.players[pid]) H.players[pid]={name,bets:{}}; else H.players[pid].name=name;
-          save(); send(pid); render();
+  let inflight=false, pending=false, lastOk=0;
+  function sync(){
+    if(inflight){pending=true;return;}
+    inflight=true;
+    fetch('/api/aukcion?op=host',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({room:ROOM,state:publicState()}),cache:'no-store'})
+      .then(r=>r.ok?r.json():Promise.reject(new Error('HTTP '+r.status)))
+      .then(d=>{
+        lastOk=Date.now();
+        const before=[...conns.keys()].sort().join(',');
+        conns.clear(); let changed=false;
+        for(const [pid,q] of Object.entries(d.players||{})){
+          if(q.seen<8000) conns.set(pid,true);
+          if(!H.players[pid]){H.players[pid]={name:q.name,bets:{}};changed=true;} else if(H.players[pid].name!==q.name){H.players[pid].name=q.name;changed=true;}
+          const bt=q.bet;
+          if(bt&&bt.i===H.i&&H.phase==='bet'&&!H.revealed[H.i]&&H.left>0){
+            const cur=H.players[pid].bets[H.i];
+            if(!cur||cur.v!==bt.v||cur.stake!==bt.stake){H.players[pid].bets[H.i]={v:bt.v,stake:bt.stake};changed=true;}
+          }
         }
-        if(m.t==='bet'&&conn._pid){
-          const p=H.players[conn._pid]; if(!p)return;
-          if(H.phase!=='bet'||H.revealed[H.i]||H.left<=0||m.i!==H.i)return send(conn._pid);
-          const v=m.v==='yes'?'yes':m.v==='no'?'no':null; const stake=[100,200,300].includes(m.stake)?m.stake:null;
-          if(!v||!stake)return;
-          p.bets[H.i]={v,stake}; save(); send(conn._pid); paintLive();
-        }
-      });
-      conn.on('close',()=>{if(conn._pid&&conns.get(conn._pid)===conn){conns.delete(conn._pid);render();}});
-    });
+        const after=[...conns.keys()].sort().join(',');
+        if(changed) save();
+        if(netErr||netState!=='Дайын. Кураторлар QR арқылы кіре алады.'){netState='Дайын. Кураторлар QR арқылы кіре алады.';netErr=false;const n=document.getElementById('net');if(n){n.textContent=netState;n.className='status';}}
+        const on=document.getElementById('online'); if(on) on.textContent='● '+conns.size+' онлайн';
+        if(H.phase==='lobby'&&(before!==after||changed)) renderLobbyList(); else paintLive();
+        if(changed&&H.phase==='bet') pending=true;
+      })
+      .catch(e=>{ if(Date.now()-lastOk>5000){netState='Серверге қосылу қиын болып тұр ('+(e&&e.message||'желі')+'). Интернетті тексеріңіз.';netErr=true;const n=document.getElementById('net');if(n){n.textContent=netState;n.className='status err';}} })
+      .finally(()=>{inflight=false; if(pending){pending=false;setTimeout(sync,150);} });
   }
+  function broadcast(){sync()}
+  setInterval(sync,1000);
 
   function startTick(){stopTick();tick=setInterval(()=>{if(H.left>0){H.left--;save();paintTimer();broadcast();if(H.left===0)stopTick();}},1000)}
   function stopTick(){if(tick){clearInterval(tick);tick=null}}
@@ -344,7 +343,7 @@ function host(){
 
   function topBar(extra=''){
     const dots=LOTS.map((_,k)=>`<i class="${H.phase==='final'||k<H.i?'done':((H.phase==='bet'||H.phase==='reveal')&&k===H.i?'now':'')}"></i>`).join('');
-    return `<div class="top"><span class="brand">JUZ40 · SMART FRIDAY</span><span class="spacer"></span>${extra}<span class="tag line" title="Қосылған кураторлар">● ${conns.size} онлайн</span><div class="dots" aria-hidden="true">${dots}</div></div>`;
+    return `<div class="top"><span class="brand">JUZ40 · SMART FRIDAY</span><span class="spacer"></span>${extra}<span class="tag line" id="online" title="Қосылған кураторлар">● ${conns.size} онлайн</span><div class="dots" aria-hidden="true">${dots}</div></div>`;
   }
   function renderLobby(){
     const names=Object.entries(H.players).filter(([pid])=>conns.has(pid)).map(([,p])=>p.name);
@@ -364,8 +363,8 @@ function host(){
       <div class="side">
         <div class="qrcard"><div id="qr" aria-label="Қосылу QR-коды"></div><div class="url">${esc(joinUrl())}</div><button class="btn solid" id="copy" style="padding:10px 18px">Сілтемені көшіру</button></div>
         <div class="status ${netErr?'err':''}" id="net">${esc(netState)}</div>
-        <div class="label">Қосылғандар · ${names.length}</div>
-        <div class="joined">${names.map(n=>`<span class="chip">${esc(n)}</span>`).join('')||'<span class="status">Әзірге ешкім жоқ</span>'}</div>
+        <div class="label" id="jlabel">Қосылғандар · ${names.length}</div>
+        <div class="joined" id="jlist">${names.map(n=>`<span class="chip">${esc(n)}</span>`).join('')||'<span class="status">Әзірге ешкім жоқ</span>'}</div>
       </div>
     </section>`;
     const q=document.getElementById('qr');
@@ -374,6 +373,12 @@ function host(){
     document.getElementById('copy').onclick=async()=>{const b=document.getElementById('copy');try{await navigator.clipboard.writeText(joinUrl());b.textContent='Көшірілді ✓';}catch(e){b.textContent='Көшіру мүмкін болмады';}};
     document.getElementById('go').onclick=()=>goLot(0);
     document.getElementById('reset').onclick=()=>{ if(document.getElementById('reset').dataset.c){ls.del('ka_host');location.reload();} else {document.getElementById('reset').dataset.c='1';document.getElementById('reset').textContent='Растау: бәрін өшіру';} };
+  }
+  function renderLobbyList(){
+    const l=document.getElementById('jlist'); if(!l) return renderLobby();
+    const names=Object.entries(H.players).filter(([pid])=>conns.has(pid)).map(([,p])=>p.name);
+    document.getElementById('jlabel').textContent='Қосылғандар · '+names.length;
+    l.innerHTML=names.map(n=>`<span class="chip">${esc(n)}</span>`).join('')||'<span class="status">Әзірге ешкім жоқ</span>';
   }
   function renderLot(){
     const L=LOTS[H.i], rev=!!H.revealed[H.i];
@@ -445,33 +450,39 @@ function host(){
   document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON'&&e.key===' ')return;
     if(e.key===' '||e.key==='ArrowRight'){e.preventDefault(); advance();}
     else if(e.key==='ArrowLeft'){e.preventDefault();back();}});
-  save(); render(); loadPeer(()=>startPeer());
-  setTimeout(()=>{ if(peer&&peer.open)return; if(H.phase==='lobby'){netState='Телефон байланысы әлі орнаған жоқ. Күте тұрыңыз немесе ойынды телефонсыз бастаңыз: тұрғандар — «Дұрыс», отырғандар — «Қате».';netErr=true;const n=document.getElementById('net');if(n){n.textContent=netState;n.className='status err';}} },12000);
+  save(); render(); sync();
+
   if(H.phase==='bet'&&!H.revealed[H.i]&&H.left>0) startTick();
 }
 
 /* ================= ОЙЫНШЫ (телефон) ================= */
 function player(hostId){
   let me=ls.get('ka_me'); if(!me||typeof me.pid!=='string'){me={pid:'p'+Math.random().toString(36).slice(2,10),name:''};}
-  let peer=null, conn=null, st=null, net='Қосылып жатыр…', draft={v:null,stake:null}, lastI=-1, retry=null;
-
-  function connect(){
-    if(typeof Peer==='undefined'){net='Байланыс жүктелмеді. Бетті жаңартыңыз немесе мобильді интернетке ауысыңыз.';render();return;}
-    if(!peer||peer.destroyed){
-      peer=new Peer(undefined,ICE);
-      peer.on('open',()=>dial());
-      peer.on('disconnected',()=>{setTimeout(()=>{try{peer.reconnect()}catch(e){}},1500)});
-      peer.on('error',e=>{ if(e.type==='peer-unavailable'){net='Хост табылмады. Жүргізуші экраны ашық па? Қайта қосылып жатыр…';render();schedule();} else {net='Желі қатесі ('+e.type+'). Қайта қосылып жатыр…';render();schedule();} });
-    } else dial();
+  let st=null, net='Қосылып жатыр…', draft={v:null,stake:null}, lastI=-1, inflight=false, timer=null, fails=0, lastSig='';
+  function poll(){
+    if(!me.name||inflight) return;
+    inflight=true;
+    const bet=(st&&st.phase==='bet'&&!st.reveal&&draft.v&&draft.stake)?{i:st.i,v:draft.v,stake:draft.stake}:null;
+    fetch('/api/aukcion?op=player',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({room:hostId,pid:me.pid,name:me.name,bet}),cache:'no-store'})
+      .then(r=>r.ok?r.json():Promise.reject(new Error('HTTP '+r.status)))
+      .then(d=>{
+        fails=0;
+        const S=d.state;
+        if(!S||!d.hostOnline){ net='Жүргізуші экраны әлі қосылмаған. Күте тұрыңыз…'; st=st||null; }
+        else{
+          net='';
+          const mine=(S.ps&&S.ps[me.pid])||{score:START,rank:0,total:0,bet:null,delta:null};
+          st={phase:S.phase,i:S.i,n:S.n,left:S.left,lot:S.lot,reveal:!!S.reveal,top:S.top||[],score:mine.score,rank:mine.rank,total:mine.total,bet:mine.bet,delta:mine.delta};
+          if(st.i!==lastI){draft={v:st.bet?st.bet.v:null,stake:st.bet?st.bet.stake:null};lastI=st.i;}
+        }
+        const sig=JSON.stringify([st,net,draft]);
+        if(sig!==lastSig){lastSig=sig;render();}
+      })
+      .catch(()=>{ fails++; if(fails>=3){ net='Интернет баяу немесе үзілді. Қайта қосылып жатыр…'; render(); } })
+      .finally(()=>{inflight=false;});
   }
-  function dial(){
-    conn=peer.connect(hostId,{reliable:true,serialization:'json'});
-    conn.on('open',()=>{net='';conn.send({t:'hello',pid:me.pid,name:me.name});});
-    conn.on('data',m=>{if(m&&m.t==='state'){st=m; if(st.i!==lastI){draft={v:st.bet?st.bet.v:null,stake:st.bet?st.bet.stake:null};lastI=st.i;} render();}});
-    conn.on('close',()=>{net='Байланыс үзілді, қайта қосылып жатыр…';render();schedule();});
-  }
-  function schedule(){clearTimeout(retry);retry=setTimeout(connect,2500)}
-  function sendBet(){if(conn&&conn.open&&draft.v&&draft.stake) conn.send({t:'bet',i:st.i,v:draft.v,stake:draft.stake});}
+  function start(){ if(timer) return; poll(); timer=setInterval(poll,1200); }
+  function sendBet(){ lastSig=''; setTimeout(poll,0); }
 
   function renderJoin(){
     root.innerHTML=`<div class="ply">
@@ -480,7 +491,7 @@ function player(hostId){
       <p class="note" style="text-align:left">Атыңызды жазыңыз — ол рейтингте көрінеді.</p>
       <form class="field" id="f"><label class="label" for="nm">Аты-жөніңіз</label><input id="nm" maxlength="40" autocomplete="name" placeholder="Мысалы, Әсел Б." value="${esc(me.name)}" required><button class="btn solid" style="margin-top:8px">Ойынға кіру</button></form>
     </div>`;
-    document.getElementById('f').onsubmit=e=>{e.preventDefault();const v=document.getElementById('nm').value.trim();if(!v)return;me.name=v.slice(0,40);ls.set('ka_me',me);render();loadPeer(()=>connect());};
+    document.getElementById('f').onsubmit=e=>{e.preventDefault();const v=document.getElementById('nm').value.trim();if(!v)return;me.name=v.slice(0,40);ls.set('ka_me',me);render();start();};
   }
   function scorebar(){return st?`<div class="scorebar"><span>Ұпайыңыз</span><span class="big">${st.score}</span><span>${st.total?st.rank+' / '+st.total+' орын':''}</span></div>`:''}
   function render(){
@@ -516,7 +527,7 @@ function player(hostId){
     root.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{draft.v=b.dataset.v;if(!draft.stake)draft.stake=100;sendBet();render();});
     root.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{draft.stake=+b.dataset.s;sendBet();render();});
   }
-  render(); loadPeer(()=>{ if(me.name) connect(); });
+  render(); if(me.name) start();
 }
 
 if(JOIN) player(JOIN.replace(/[^a-z0-9-]/gi,'').slice(0,40)); else host();
