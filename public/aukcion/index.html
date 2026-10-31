@@ -8,7 +8,6 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap">
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>window.Peer||document.write('<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"><\/script>')</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{
   --ink:#170B25; --card:#22112F; --line:#4A3266;
@@ -215,7 +214,10 @@ const BET=25, START=1000;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const root=document.getElementById('root');
 const params=new URLSearchParams(location.search);
-const JOIN=params.get('join');
+const ROOM='juz40-smartfriday-aukcion';
+const PLAY_URL='https://livesabak.vercel.app/aukcion/?play=1';
+const QR_PNG='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACUAAAAlAQAAAADt5R2uAAAA6UlEQVR42gHeACH/Af8AAAD5AgAAAAAABMGRJvmoAh8EUQfABPL6H53hAgAa2MAAAgDgZcAAAN9j9TfYAuHyYBlAAP/g+V/4ANgbCe0YAcLt5Kk8ANhFJrQYAhVCJwcAAPUaADeYAPay2wv4AeRenZcCBBFF3PTuBNuy0ue4Af7iUEXjAt8saSUAAf8A577UAudD0logAMnRRRz4AdBL85/rAgC4Oe7gAc+aSg04Af/eugabAMBBshV4AN9M25wYAvIExeWABAAMXM8NAgAh4V3AAg73OvmAAuHjuPjgAf8AAAD5AgAAAAAAkiRcnBcatgwAAAAASUVORK5CYII=';
+const JOIN=params.has('play')?ROOM:params.get('join');
 const ICE={config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'}]}};
 const ls={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 
@@ -252,11 +254,12 @@ function confetti(){
 /* ================= ХОСТ (экран) ================= */
 function host(){
   const saved=ls.get('ka_host');
-  let H=saved&&saved.v===2?saved:{v:2,id:'juz40sf-'+Math.random().toString(36).slice(2,8),phase:'lobby',i:0,left:BET,revealed:{},players:{}};
+  let H=saved&&saved.v===2?saved:{v:2,phase:'lobby',i:0,left:BET,revealed:{},players:{}};
+  H.id=ROOM;
   // players: {pid:{name, bets:{i:{v:'yes'|'no',stake}}}}
   const conns=new Map(); let peer=null, tick=null, netState='Байланыс орнатылып жатыр…', netErr=false, tries=0;
   const save=()=>ls.set('ka_host',H);
-  const joinUrl=()=>location.origin+location.pathname+'?join='+H.id;
+  const joinUrl=()=>PLAY_URL;
 
   function scoreOf(p){let s=START;for(const [i,b] of Object.entries(p.bets||{})){if(!H.revealed[i])continue;const L=LOTS[i];s+=((b.v==='yes')===L.ok?1:-1)*b.stake*(L.double?2:1);}return s}
   function deltaOf(p,i){const b=(p.bets||{})[i];if(!b||!H.revealed[i])return null;const L=LOTS[i];return ((b.v==='yes')===L.ok?1:-1)*b.stake*(L.double?2:1)}
@@ -284,7 +287,7 @@ function host(){
     peer.on('open',()=>{netState='Дайын. Кураторлар QR арқылы кіре алады.';netErr=false;tries=0;render();});
     peer.on('disconnected',()=>{netState='Сигнал серверімен байланыс үзілді, қайта қосылып жатыр…';netErr=true;render();setTimeout(()=>{try{peer.reconnect()}catch(e){}},1500);});
     peer.on('error',e=>{
-      if(e.type==='unavailable-id'&&tries<6){tries++;netState='Бұрынғы сессия жабылуын күтіп жатыр…';render();try{peer.destroy()}catch(_){}setTimeout(startPeer,3000);return;}
+      if(e.type==='unavailable-id'&&tries<40){tries++;netState='Ойын бөлмесі әлі бос емес (бұрынғы экран жабылуын күтіп жатыр, '+tries+'/40). Басқа құрылғыда жүргізуші беті ашық тұрса, оны жабыңыз.';render();try{peer.destroy()}catch(_){}setTimeout(startPeer,3000);return;}
       if(e.type==='peer-unavailable')return;
       netState='Желі қатесі: '+e.type+'. Бетті жаңартып көріңіз.';netErr=true;render();
     });
@@ -355,18 +358,8 @@ function host(){
       </div>
     </section>`;
     const q=document.getElementById('qr');
-    if(!/^https?:$/.test(location.protocol)){q.innerHTML='<div style="display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center"><span class="status err">Бұл — файлдың превьюі, мұнда QR жұмыс істемейді.</span><a class="btn solid" href="https://livesabak.vercel.app/aukcion/" target="_blank" rel="noopener">Ойынды сайтта ашу</a><span class="url">livesabak.vercel.app/aukcion</span></div>';}
-    else{
-      let ok=false;
-      try{ if(typeof QRCode!=='undefined'){ new QRCode(q,{text:joinUrl(),width:512,height:512,colorDark:'#170B25',colorLight:'#F7F2FB',correctLevel:QRCode.CorrectLevel.M}); ok=!!q.querySelector('canvas,img'); } }catch(e){ ok=false; }
-      if(!ok){
-        q.innerHTML='';
-        const img=new Image(); img.alt='Қосылу QR-коды';
-        img.src='https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=0&color=170B25&bgcolor=F7F2FB&data='+encodeURIComponent(joinUrl());
-        img.onerror=()=>{q.innerHTML='<span class="status err" style="text-align:center">QR жүктелмеді. Төмендегі сілтемені кураторларға жіберіңіз.</span>';};
-        q.appendChild(img);
-      }
-    }
+    q.innerHTML='<img src="'+QR_PNG+'" alt="Қосылу QR-коды" style="width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges">';
+    if(!/^https?:$/.test(location.protocol)) document.getElementById('net').insertAdjacentHTML('beforebegin','<div class="status err">Бұл — файлдың превьюі. QR дұрыс, бірақ ойын тұрақты жүруі үшін жүргізуші бетін сайттан ашыңыз: <a href="https://livesabak.vercel.app/aukcion/" target="_blank" rel="noopener" style="color:var(--lilac)">livesabak.vercel.app/aukcion</a></div>');
     document.getElementById('copy').onclick=async()=>{const b=document.getElementById('copy');try{await navigator.clipboard.writeText(joinUrl());b.textContent='Көшірілді ✓';}catch(e){b.textContent='Көшіру мүмкін болмады';}};
     document.getElementById('go').onclick=()=>goLot(0);
     document.getElementById('reset').onclick=()=>{ if(document.getElementById('reset').dataset.c){ls.del('ka_host');location.reload();} else {document.getElementById('reset').dataset.c='1';document.getElementById('reset').textContent='Растау: бәрін өшіру';} };
