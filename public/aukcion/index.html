@@ -355,7 +355,7 @@ function host(){
       </div>
     </section>`;
     const q=document.getElementById('qr');
-    if(!/^https?:$/.test(location.protocol)){q.innerHTML='<span class="status err" style="text-align:center">Бет сайтта ашылмаған, сондықтан QR жасалмайды. Ойынды сайттағы мекенжайынан ашыңыз.</span>';}
+    if(!/^https?:$/.test(location.protocol)){q.innerHTML='<div style="display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center"><span class="status err">Бұл — файлдың превьюі, мұнда QR жұмыс істемейді.</span><a class="btn solid" href="https://livesabak.vercel.app/aukcion/" target="_blank" rel="noopener">Ойынды сайтта ашу</a><span class="url">livesabak.vercel.app/aukcion</span></div>';}
     else{
       let ok=false;
       try{ if(typeof QRCode!=='undefined'){ new QRCode(q,{text:joinUrl(),width:512,height:512,colorDark:'#170B25',colorLight:'#F7F2FB',correctLevel:QRCode.CorrectLevel.M}); ok=!!q.querySelector('canvas,img'); } }catch(e){ ok=false; }
