@@ -289,7 +289,7 @@ function host(){
     if(H.phase==='final') base.top=rk.slice(0,3).map(r=>({name:r.name,score:r.score}));
     return base;
   }
-  function send(pid){const c=conns.get(pid);if(c&&c.open){try{c.send(stateFor(pid))}catch(e){}}}
+  function send(pid){const c=conns.get(pid);if(c&&c.open){try{c.send(JSON.parse(JSON.stringify(stateFor(pid))))}catch(e){console.error('send failed',e);netState='Жіберу қатесі: '+(e&&e.message||e);netErr=true;}}}
   function broadcast(){for(const pid of conns.keys()) send(pid)}
 
   function startPeer(){
@@ -465,7 +465,7 @@ function player(hostId){
     } else dial();
   }
   function dial(){
-    conn=peer.connect(hostId,{reliable:true});
+    conn=peer.connect(hostId,{reliable:true,serialization:'json'});
     conn.on('open',()=>{net='';conn.send({t:'hello',pid:me.pid,name:me.name});});
     conn.on('data',m=>{if(m&&m.t==='state'){st=m; if(st.i!==lastI){draft={v:st.bet?st.bet.v:null,stake:st.bet?st.bet.stake:null};lastI=st.i;} render();}});
     conn.on('close',()=>{net='Байланыс үзілді, қайта қосылып жатыр…';render();schedule();});
