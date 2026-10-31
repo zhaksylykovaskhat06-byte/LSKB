@@ -6,8 +6,6 @@
 <title>Қате аукционы · JUZ40 Smart Friday</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap">
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<script>window.Peer||document.write('<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"><\/script>')</script>
 <style>
 :root{
   --ink:#170B25; --card:#22112F; --line:#4A3266;
@@ -219,6 +217,19 @@ const PLAY_URL='https://livesabak.vercel.app/aukcion/?play=1';
 const QR_PNG='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACUAAAAlAQAAAADt5R2uAAAA6UlEQVR42gHeACH/Af8AAAD5AgAAAAAABMGRJvmoAh8EUQfABPL6H53hAgAa2MAAAgDgZcAAAN9j9TfYAuHyYBlAAP/g+V/4ANgbCe0YAcLt5Kk8ANhFJrQYAhVCJwcAAPUaADeYAPay2wv4AeRenZcCBBFF3PTuBNuy0ue4Af7iUEXjAt8saSUAAf8A577UAudD0logAMnRRRz4AdBL85/rAgC4Oe7gAc+aSg04Af/eugabAMBBshV4AN9M25wYAvIExeWABAAMXM8NAgAh4V3AAg73OvmAAuHjuPjgAf8AAAD5AgAAAAAAkiRcnBcatgwAAAAASUVORK5CYII=';
 const JOIN=params.has('play')?ROOM:params.get('join');
 const ICE={config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'}]}};
+function loadPeer(cb){
+  if(window.Peer) return cb(true);
+  const srcs=['https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js','https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js','https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js'];
+  let k=0,done=false;
+  (function next(){
+    if(done)return; if(window.Peer){done=true;return cb(true);} if(k>=srcs.length){done=true;return cb(false);}
+    const sc=document.createElement('script'); sc.src=srcs[k++]; sc.async=true;
+    const t=setTimeout(()=>{sc.onload=sc.onerror=null;next();},7000);
+    sc.onload=()=>{clearTimeout(t);if(window.Peer){done=true;cb(true);}else next();};
+    sc.onerror=()=>{clearTimeout(t);next();};
+    document.head.appendChild(sc);
+  })();
+}
 const ls={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 
 /* ---------- ортақ рендер бөліктері ---------- */
@@ -282,7 +293,7 @@ function host(){
   function broadcast(){for(const pid of conns.keys()) send(pid)}
 
   function startPeer(){
-    if(typeof Peer==='undefined'){netState='Желі кітапханасы жүктелмеді. Интернетті тексеріп, бетті жаңартыңыз.';netErr=true;render();return;}
+    if(typeof Peer==='undefined'){netState='Телефон байланысы жүктелмеді. Ойынды телефонсыз жүргізе бересіз: тұрғандар — «Дұрыс», отырғандар — «Қате».';netErr=true;render();return;}
     peer=new Peer(H.id,ICE);
     peer.on('open',()=>{netState='Дайын. Кураторлар QR арқылы кіре алады.';netErr=false;tries=0;render();});
     peer.on('disconnected',()=>{netState='Сигнал серверімен байланыс үзілді, қайта қосылып жатыр…';netErr=true;render();setTimeout(()=>{try{peer.reconnect()}catch(e){}},1500);});
@@ -348,7 +359,7 @@ function host(){
           <li><b>2</b>Әр лотта «Дұрыс» не «Қате» таңдап, 100, 200 не 300 ұпай тігіңіз.</li>
           <li><b>3</b>Бастапқы ұпай — 1000. Ең көп жинаған үшеу жеңеді. Соңғы лотта ставка ×2.</li>
         </ol>
-        <div class="controls"><button class="btn solid" id="go" ${names.length?'':'disabled'}>Аукционды бастау</button><button class="btn ghost" id="reset">Жаңа ойын</button><span class="kbd"><b>Space</b> / <b>→</b> — келесі қадам</span></div>
+        <div class="controls"><button class="btn solid" id="go">Аукционды бастау</button><button class="btn ghost" id="reset">Жаңа ойын</button><span class="kbd"><b>Space</b> / <b>→</b> — келесі қадам</span></div>
       </div>
       <div class="side">
         <div class="qrcard"><div id="qr" aria-label="Қосылу QR-коды"></div><div class="url">${esc(joinUrl())}</div><button class="btn solid" id="copy" style="padding:10px 18px">Сілтемені көшіру</button></div>
@@ -432,9 +443,10 @@ function host(){
     }
   }
   document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON'&&e.key===' ')return;
-    if(e.key===' '||e.key==='ArrowRight'){e.preventDefault(); if(H.phase==='lobby'&&!Object.keys(H.players).length)return; advance();}
+    if(e.key===' '||e.key==='ArrowRight'){e.preventDefault(); advance();}
     else if(e.key==='ArrowLeft'){e.preventDefault();back();}});
-  save(); render(); startPeer();
+  save(); render(); loadPeer(()=>startPeer());
+  setTimeout(()=>{ if(peer&&peer.open)return; if(H.phase==='lobby'){netState='Телефон байланысы әлі орнаған жоқ. Күте тұрыңыз немесе ойынды телефонсыз бастаңыз: тұрғандар — «Дұрыс», отырғандар — «Қате».';netErr=true;const n=document.getElementById('net');if(n){n.textContent=netState;n.className='status err';}} },12000);
   if(H.phase==='bet'&&!H.revealed[H.i]&&H.left>0) startTick();
 }
 
@@ -444,7 +456,7 @@ function player(hostId){
   let peer=null, conn=null, st=null, net='Қосылып жатыр…', draft={v:null,stake:null}, lastI=-1, retry=null;
 
   function connect(){
-    if(typeof Peer==='undefined'){net='Желі кітапханасы жүктелмеді. Бетті жаңартыңыз.';render();return;}
+    if(typeof Peer==='undefined'){net='Байланыс жүктелмеді. Бетті жаңартыңыз немесе мобильді интернетке ауысыңыз.';render();return;}
     if(!peer||peer.destroyed){
       peer=new Peer(undefined,ICE);
       peer.on('open',()=>dial());
@@ -468,7 +480,7 @@ function player(hostId){
       <p class="note" style="text-align:left">Атыңызды жазыңыз — ол рейтингте көрінеді.</p>
       <form class="field" id="f"><label class="label" for="nm">Аты-жөніңіз</label><input id="nm" maxlength="40" autocomplete="name" placeholder="Мысалы, Әсел Б." value="${esc(me.name)}" required><button class="btn solid" style="margin-top:8px">Ойынға кіру</button></form>
     </div>`;
-    document.getElementById('f').onsubmit=e=>{e.preventDefault();const v=document.getElementById('nm').value.trim();if(!v)return;me.name=v.slice(0,40);ls.set('ka_me',me);render();connect();};
+    document.getElementById('f').onsubmit=e=>{e.preventDefault();const v=document.getElementById('nm').value.trim();if(!v)return;me.name=v.slice(0,40);ls.set('ka_me',me);render();loadPeer(()=>connect());};
   }
   function scorebar(){return st?`<div class="scorebar"><span>Ұпайыңыз</span><span class="big">${st.score}</span><span>${st.total?st.rank+' / '+st.total+' орын':''}</span></div>`:''}
   function render(){
@@ -504,7 +516,7 @@ function player(hostId){
     root.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{draft.v=b.dataset.v;if(!draft.stake)draft.stake=100;sendBet();render();});
     root.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{draft.stake=+b.dataset.s;sendBet();render();});
   }
-  render(); if(me.name) connect();
+  render(); loadPeer(()=>{ if(me.name) connect(); });
 }
 
 if(JOIN) player(JOIN.replace(/[^a-z0-9-]/gi,'').slice(0,40)); else host();
