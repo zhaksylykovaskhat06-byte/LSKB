@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap">
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>window.Peer||document.write('<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"><\/script>')</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{
@@ -347,7 +348,7 @@ function host(){
         <div class="controls"><button class="btn solid" id="go" ${names.length?'':'disabled'}>Аукционды бастау</button><button class="btn ghost" id="reset">Жаңа ойын</button><span class="kbd"><b>Space</b> / <b>→</b> — келесі қадам</span></div>
       </div>
       <div class="side">
-        <div class="qrcard"><div id="qr" aria-label="Қосылу QR-коды"></div><div class="url">${esc(joinUrl())}</div></div>
+        <div class="qrcard"><div id="qr" aria-label="Қосылу QR-коды"></div><div class="url">${esc(joinUrl())}</div><button class="btn solid" id="copy" style="padding:10px 18px">Сілтемені көшіру</button></div>
         <div class="status ${netErr?'err':''}" id="net">${esc(netState)}</div>
         <div class="label">Қосылғандар · ${names.length}</div>
         <div class="joined">${names.map(n=>`<span class="chip">${esc(n)}</span>`).join('')||'<span class="status">Әзірге ешкім жоқ</span>'}</div>
@@ -355,8 +356,18 @@ function host(){
     </section>`;
     const q=document.getElementById('qr');
     if(!/^https?:$/.test(location.protocol)){q.innerHTML='<span class="status err" style="text-align:center">Бет сайтта ашылмаған, сондықтан QR жасалмайды. Ойынды сайттағы мекенжайынан ашыңыз.</span>';}
-    else if(typeof QRCode!=='undefined'){new QRCode(q,{text:joinUrl(),width:512,height:512,colorDark:'#170B25',colorLight:'#F7F2FB',correctLevel:QRCode.CorrectLevel.M});}
-    else q.innerHTML='<span class="status">QR жүктелмеді — сілтемені көрсетіңіз</span>';
+    else{
+      let ok=false;
+      try{ if(typeof QRCode!=='undefined'){ new QRCode(q,{text:joinUrl(),width:512,height:512,colorDark:'#170B25',colorLight:'#F7F2FB',correctLevel:QRCode.CorrectLevel.M}); ok=!!q.querySelector('canvas,img'); } }catch(e){ ok=false; }
+      if(!ok){
+        q.innerHTML='';
+        const img=new Image(); img.alt='Қосылу QR-коды';
+        img.src='https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=0&color=170B25&bgcolor=F7F2FB&data='+encodeURIComponent(joinUrl());
+        img.onerror=()=>{q.innerHTML='<span class="status err" style="text-align:center">QR жүктелмеді. Төмендегі сілтемені кураторларға жіберіңіз.</span>';};
+        q.appendChild(img);
+      }
+    }
+    document.getElementById('copy').onclick=async()=>{const b=document.getElementById('copy');try{await navigator.clipboard.writeText(joinUrl());b.textContent='Көшірілді ✓';}catch(e){b.textContent='Көшіру мүмкін болмады';}};
     document.getElementById('go').onclick=()=>goLot(0);
     document.getElementById('reset').onclick=()=>{ if(document.getElementById('reset').dataset.c){ls.del('ka_host');location.reload();} else {document.getElementById('reset').dataset.c='1';document.getElementById('reset').textContent='Растау: бәрін өшіру';} };
   }
