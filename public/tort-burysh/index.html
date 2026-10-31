@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Төрт бұрыш · JUZ40 Smart Friday</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: the screen mirrors the room — the case sits in the middle, the four options sit in the four corners, the same colours as the printed corner signs. */
+:root{
+  --ink:#170B25; --card:#22112F; --line:#4A3266;
+  --lilac:#D8BEF0; --violet:#B98AF0; --text:#F3EDF8; --muted:#C2B0D6;
+  --a:#8FE3B5; --b:#FFD36E; --c:#FF9A8F; --d:#9EC5FF;
+  --a-ink:#0F2A1D; --b-ink:#2B1A00; --c-ink:#3A0D12; --d-ink:#0B1D3A;
+  --display:'Oswald','Arial Narrow',Arial,sans-serif;
+  --body:'Montserrat',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--ink);color:var(--text);font-family:var(--body);overflow-x:hidden}
+.bg{position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(60vmax 60vmax at 50% 45%, rgba(154,90,216,.32), transparent 60%),
+  linear-gradient(transparent 47px, rgba(255,255,255,.04) 48px) 0 0/48px 48px,
+  linear-gradient(90deg, transparent 47px, rgba(255,255,255,.04) 48px) 0 0/48px 48px, var(--ink)}
+.app{position:relative;min-height:100%;display:flex;flex-direction:column;
+  padding-block:max(clamp(14px,2.4vw,32px),env(safe-area-inset-top,0px)) max(clamp(14px,2.4vw,32px),env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{width:min(1500px,100%);margin:0 auto;flex:1;display:flex;flex-direction:column;gap:clamp(12px,1.8vw,24px)}
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:700;letter-spacing:.06em;font-size:clamp(16px,1.4vw,22px);color:var(--lilac)}
+.eyebrow{font-weight:700;font-size:clamp(12px,1vw,15px);letter-spacing:.2em;text-transform:uppercase;color:var(--violet)}
+.spacer{flex:1}
+.dots{display:flex;gap:5px}.dots i{width:26px;height:6px;border-radius:3px;background:var(--line)}.dots i.done{background:var(--violet)}.dots i.now{background:var(--lilac)}
+.btn{font:700 clamp(15px,1.15vw,18px)/1 var(--body);border-radius:999px;padding:14px 24px;border:2px solid var(--lilac);background:transparent;color:var(--lilac);cursor:pointer}
+.btn:focus-visible{outline:3px solid var(--text);outline-offset:3px}
+.btn.solid{background:var(--lilac);color:var(--ink)} .btn.ghost{border-color:var(--line);color:var(--muted)}
+.kbd{font-size:13px;color:var(--muted)} .kbd b{border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:var(--text)}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* intro */
+.intro{flex:1;display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(24px,4vw,64px);align-items:center}
+.intro h1{font-family:var(--display);font-weight:700;text-transform:uppercase;line-height:.88;margin:10px 0 18px;font-size:clamp(70px,11vw,190px);color:var(--lilac)}
+.lead{font-size:clamp(17px,1.5vw,23px);line-height:1.45;max-width:36ch;margin:0 0 22px}
+.rules{list-style:none;margin:0 0 26px;padding:0;display:grid;gap:12px}
+.rules li{display:flex;gap:14px;align-items:baseline;font-size:clamp(15px,1.25vw,19px);color:var(--muted);line-height:1.4}
+.rules b{font-family:var(--display);font-size:1.35em;color:var(--lilac);min-width:1.1em}
+.room{position:relative;aspect-ratio:1;width:min(520px,100%);justify-self:center;border:2px dashed var(--line);border-radius:28px;display:grid;place-items:center}
+.room .mid{font-family:var(--display);font-size:clamp(20px,2vw,30px);color:var(--muted);text-align:center;letter-spacing:.04em}
+.room .k{position:absolute;width:30%;aspect-ratio:1;border-radius:22px;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:clamp(48px,6vw,96px)}
+.room .k.a{left:-2px;top:-2px;background:var(--a);color:var(--a-ink)} .room .k.b{right:-2px;top:-2px;background:var(--b);color:var(--b-ink)}
+.room .k.c{left:-2px;bottom:-2px;background:var(--c);color:var(--c-ink)} .room .k.d{right:-2px;bottom:-2px;background:var(--d);color:var(--d-ink)}
+
+/* case */
+.board{flex:1;display:grid;grid-template-columns:1fr 1.25fr 1fr;grid-template-rows:auto auto;gap:clamp(12px,1.4vw,20px);align-items:stretch}
+.opt{border-radius:24px;padding:clamp(16px,1.6vw,24px);display:flex;flex-direction:column;gap:10px;border:3px solid transparent;transition:opacity .35s, transform .35s, filter .35s;min-width:0}
+.opt .k{font-family:var(--display);font-weight:700;font-size:clamp(36px,3.4vw,58px);line-height:1}
+.opt .t{font-size:clamp(16px,1.35vw,22px);font-weight:700;line-height:1.35}
+.opt .corner{font-size:clamp(11px,.9vw,13px);font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
+.opt.a{background:var(--a);color:var(--a-ink);grid-column:1;grid-row:1} .opt.b{background:var(--b);color:var(--b-ink);grid-column:3;grid-row:1}
+.opt.c{background:var(--c);color:var(--c-ink);grid-column:1;grid-row:2} .opt.d{background:var(--d);color:var(--d-ink);grid-column:3;grid-row:2}
+.opt.dim{opacity:.28;filter:saturate(.4)}
+.opt.best{transform:scale(1.03);border-color:var(--text);box-shadow:0 0 0 6px rgba(243,237,248,.15),0 24px 60px rgba(0,0,0,.4)}
+.center{grid-column:2;grid-row:1 / span 2;background:var(--card);border:1px solid var(--line);border-radius:28px;padding:clamp(18px,1.8vw,30px);display:flex;flex-direction:column;gap:clamp(10px,1vw,14px);box-shadow:0 30px 80px rgba(0,0,0,.35);min-width:0;position:relative;overflow:hidden}
+.center .no{font-family:var(--display);font-weight:700;font-size:clamp(26px,2.6vw,44px);color:var(--lilac);line-height:1}
+.center .title{font-family:var(--display);font-weight:600;text-transform:uppercase;font-size:clamp(22px,2.1vw,36px);line-height:1.05;color:var(--text)}
+.center .story{font-size:clamp(15px,1.25vw,20px);line-height:1.45}
+.center .ask{font-size:clamp(16px,1.35vw,21px);font-weight:700;color:var(--lilac)}
+.twist{border-radius:16px;padding:12px 16px;background:rgba(255,211,110,.12);border:2px solid var(--b);animation:pop .5s cubic-bezier(.2,1.5,.4,1) both}
+.twist .lbl{font-family:var(--display);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--b);font-size:clamp(18px,1.6vw,26px)}
+.twist p{margin:4px 0 0;font-size:clamp(14px,1.15vw,18px);line-height:1.4}
+@keyframes pop{0%{opacity:0;transform:translateY(12px) scale(.96)}100%{opacity:1;transform:none}}
+.why{border-radius:16px;padding:12px 16px;background:rgba(216,190,240,.08);border:1px solid var(--line)}
+.why .lbl{font-weight:800;font-size:clamp(13px,1vw,15px);letter-spacing:.14em;text-transform:uppercase;color:var(--violet)}
+.why p{margin:4px 0 0;font-size:clamp(14px,1.1vw,18px);line-height:1.45}
+.argue{font-family:var(--display);font-size:clamp(16px,1.35vw,22px);color:var(--lilac);letter-spacing:.03em}
+.timerbar{display:flex;align-items:center;gap:14px}
+.timerbar .num{font-family:var(--display);font-weight:700;font-size:clamp(40px,3.6vw,64px);font-variant-numeric:tabular-nums;line-height:1;min-width:2ch}
+.timerbar .msg{font-size:clamp(15px,1.25vw,19px);color:var(--muted);line-height:1.35}
+.timerbar .msg b{color:var(--text)}
+.track{height:10px;border-radius:5px;background:var(--line);overflow:hidden;flex:1;min-width:80px}.track i{display:block;height:100%;background:var(--lilac);transition:width 1s linear}
+.low .track i{background:var(--b)}
+.stamp{position:absolute;right:16px;top:14px;font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(18px,1.6vw,26px);padding:4px 14px;border:4px solid var(--b);color:var(--b);border-radius:12px;transform:rotate(6deg);animation:pop .4s both}
+
+/* final */
+.final{flex:1;display:grid;grid-template-columns:1fr 1.1fr;gap:clamp(24px,4vw,64px);align-items:center}
+.final h1{font-family:var(--display);font-weight:700;text-transform:uppercase;line-height:.9;margin:10px 0 18px;font-size:clamp(56px,7.6vw,130px);color:var(--lilac)}
+.sum{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.sum li{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line);font-size:clamp(15px,1.2vw,18px);line-height:1.4}
+.sum .k{font-family:var(--display);font-weight:700;font-size:22px;width:1.6em;height:1.6em;border-radius:10px;display:grid;place-items:center}
+
+@media (max-width:900px){
+  .intro,.final{grid-template-columns:1fr}
+  .board{grid-template-columns:1fr 1fr}
+  .center{grid-column:1 / span 2;grid-row:1}
+  .opt.a{grid-column:1;grid-row:2}.opt.b{grid-column:2;grid-row:2}.opt.c{grid-column:1;grid-row:3}.opt.d{grid-column:2;grid-row:3}
+}
+@media (max-width:520px){.board{grid-template-columns:1fr}.center{grid-column:1}.opt.a,.opt.b,.opt.c,.opt.d{grid-column:1;grid-row:auto}}
+@media (prefers-reduced-motion:reduce){.twist,.stamp{animation:none}.opt,.track i{transition:none}}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"></div>
+<div class="app"><div class="wrap" id="root"></div></div>
+<script>
+/* best — ұсынылатын шешім (бұрылыс болса — бұрылыстан кейінгі). before — бұрылысқа дейінгі ұсыныс. */
+const CASES=[
+ {title:'Үнсіз оқушы',
+  story:'Оқушы екі апта бойы үй жұмысын тапсырмайды, топ чатындағы хабарламаларға да жауап бермейді.',
+  ask:'Куратор ретінде бірінші не істейсің?',
+  opts:['Чатқа тағы ескерту жазып, бір апта күтемін','Бірден ата-анасына хабарласамын','Өзіне қоңырау шалып, жағдайын сұраймын да, бірге шағын жоспар құрамыз','Мұғалімге тапсырамын — ол шешсін'],
+  before:'C',
+  twist:'Сыныптасы айтты: оның телефоны екі аптадан бері сынық, интернетке тек анасының телефонынан кіреді.',
+  best:'B',
+  why:'Бұрылысқа дейін ең жақсысы — жеке қоңырау (C): айып емес, қамқорлық. Бірақ байланыс арнасы жоқ екені белгілі болды — енді жол ата-ана арқылы (B). Мақсат сол: оқушымен сөйлесіп, жоспарды қалпына келтіру.'},
+ {title:'Тұрып қалған балл',
+  story:'Оқушы үш ай бойы физикадан 14–16 балл алып жүр. Сабаққа толық қатысады, үй жұмысын уақытында орындайды.',
+  ask:'Балды қозғау үшін не істейсің?',
+  opts:['Көбірек тапсырма беремін','Тест қателерін бірге талдап, балл қай тақырыптан жоғалатынын табамыз','Мотивациялық видео жіберемін','Бірден деңгейі төмен топқа ауыстырамын'],
+  best:'B',
+  why:'Оқушы еңбек етіп жүр — мәселе көлемде емес, бағытта. Қате дәптері мен тест талдауы әлсіз 2–3 тақырыпты көрсетеді, қосымша сабақ соған бағытталады.'},
+ {title:'Ашулы ата-ана',
+  story:'Ата-ана жазды: «Ақша төледік, балам балл қоспай жатыр. Сендер жұмыс істемейсіңдер!»',
+  ask:'Қалай жауап бересің?',
+  opts:['Ақталамын: сабақ бар, балаңыз өзі оқымайды','Деректермен жауап беремін: қатысу, ҮЖ, тест динамикасы және келесі 2 аптаның нақты жоспары','Хабарламаны бірден басшылыққа жіберемін','Ашуы басылғанша жауап бермей күтемін'],
+  twist:'Деректерді ашсаң: оқушы соңғы үш аптада сабақтардың жартысына қатыспаған.',
+  best:'B',
+  why:'Бұрылыс шешімді өзгертпейді — керісінше күшейтеді. Айыптамай, фактіні көрсету: «Қатысу 50%-ға түсті, міне жоспар — бірге бақылайық». Ата-ана — одақтас, қарсылас емес.'},
+ {title:'«Бәрібір үлгермеймін»',
+  story:'Қаңтардағы ҰБТ-ға екі ай қалғанда оқушы жазады: «Мен бәрібір үлгермеймін, курсты тастаймын».',
+  ask:'Не дейсің?',
+  opts:['«Тастамайсың!» деп қатаң сөйлесемін','«Өз шешімің» деп келісемін','60 күнге шағын, өлшенетін мақсат қоямыз: аптасына 2 нұсқа, келесі тестке +5 балл','Үздік оқушылардың нәтижесін көрсетіп, салыстырамын'],
+  best:'C',
+  why:'Үрейді үлкен мақсат емес, жақын әрі нақты қадам басады. Аптасына 2 нұсқа мен +5 балл — оқушы өзі бақылай алатын жеңіс. Салыстыру мен қысым үрейді күшейтеді.'},
+ {title:'Бос қосымша сабақ',
+  story:'Топта 30 оқушы. Қосымша сабаққа 25-і тіркелді, бірақ келетіні — тек 8.',
+  ask:'Келесі аптада не өзгертесің?',
+  opts:['Бәрін тағы шақыра беремін','Сабақты нақты әлсіз тақырыбы барларға арнаймын: жеке шақыру, сабақтан кейін 3–5 есеппен тексеріс','Қосымша сабақты мүлде жабамын','Келмегендерді топ чатында атап өтемін'],
+  best:'B',
+  why:'«Бәріне» арналған сабаққа ешкім өзін жатқызбайды. Жеке шақыру — «саған мына тақырып керек» — әрі нәтижені тексеру қатысуды көтереді. Жария ұялту керісінше әсер етеді.'},
+ {title:'Орбита бос тұр',
+  story:'Тобыңда 40 оқушы бар, Орбита сайтына тек 6-уы тіркелген. Сілтеме чатта бір апта бұрын жіберілген.',
+  ask:'Тіркеуді қалай көтересің?',
+  opts:['Сілтемені чатқа тағы жіберемін','Сабақ кезінде 5 минут бөліп, бәрі бірге тіркелеміз','Тіркелмегендерге ескерту беремін','Мұғалімнен сұраймын'],
+  twist:'Анықталды: оқушылардың жартысы сайтқа кіретін логин мен құпиясөзін білмейді.',
+  best:'B',
+  why:'Сілтеме жеткіліксіз — кедергі техникалық. Бірге 5 минутта тіркелу логин мәселесін сол жерде шешеді. Келесі қадам: апталық жоспарға Орбитадағы тапсырманы қосу.'}
+];
+const K=['A','B','C','D'], CL=['a','b','c','d'];
+const CORNER=['Сол жақ алдыңғы бұрыш','Оң жақ алдыңғы бұрыш','Сол жақ артқы бұрыш','Оң жақ артқы бұрыш'];
+const GO=20, SWITCH=12;
+let S={screen:'intro',i:0,phase:'go',left:GO};
+let tick=null;
+const root=document.getElementById('root');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function topBar(extra=''){
+  const dots=CASES.map((_,k)=>`<i class="${S.screen==='final'||k<S.i?'done':(S.screen==='case'&&k===S.i?'now':'')}"></i>`).join('');
+  return `<div class="top"><span class="brand">JUZ40 · SMART FRIDAY</span><span class="spacer"></span>${extra}<div class="dots" aria-hidden="true">${dots}</div></div>`;
+}
+function intro(){
+  root.innerHTML=`${topBar()}<section class="intro"><div>
+    <div class="eyebrow">Сергіту сәті · кураторлар кейсі</div>
+    <h1>Төрт<br>бұрыш</h1>
+    <p class="lead">Экранда куратордың нақты жағдайы шығады. Қай шешім дұрыс деп ойласаң — бөлменің сол бұрышына бар.</p>
+    <ul class="rules">
+      <li><b>1</b>20 секунд ішінде өз бұрышыңды таңда. Ортада тұруға болмайды.</li>
+      <li><b>2</b>Кей жағдайда <span style="color:var(--b);font-weight:700">сюжет бұрылысы</span> болады — 12 секундта бұрышыңды ауыстыруға болады.</li>
+      <li><b>3</b>Шешім ашылған соң әр бұрыштан бір адам 15 секундта өз таңдауын дәлелдейді.</li>
+    </ul>
+    <div class="controls"><button class="btn solid" id="start">Бастау</button><span class="kbd"><b>Space</b> / <b>→</b> — келесі қадам · <b>←</b> — артқа</span></div>
+  </div>
+  <div class="room" aria-label="Бөлме бұрыштарының сызбасы"><div class="k a">A</div><div class="k b">B</div><div class="k c">C</div><div class="k d">D</div><div class="mid">ЭКРАН<br>осы жақта</div></div>
+  </section>`;
+  document.getElementById('start').onclick=next;
+}
+function caseView(){
+  const C=CASES[S.i], ph=S.phase;
+  const showTwist=C.twist&&(ph==='twist'||ph==='reveal');
+  let hiBest=null, hiBefore=null;
+  if(ph==='reveal'){hiBest=C.best;}
+  const opts=C.opts.map((o,k)=>{
+    let cls='opt '+CL[k];
+    if(ph==='reveal') cls+= K[k]===C.best?' best':(C.before&&K[k]===C.before?'':' dim');
+    return `<div class="${cls}"><span class="corner">${CORNER[k]}</span><span class="k">${K[k]}</span><span class="t">${esc(o)}</span></div>`;}).join('');
+  let mid='';
+  if(ph==='go'||ph==='twist'){
+    const total=ph==='go'?GO:SWITCH;
+    mid=`<div class="timerbar ${S.left<=5?'low':''}"><span class="num" id="num">${S.left}</span><div class="track"><i id="bar" style="width:${S.left/total*100}%"></i></div></div>
+      <div class="timerbar"><span class="msg" id="msg">${ph==='go'?(S.left>0?'<b>Бұрышыңа бар!</b> Таңдау уақыты жүріп жатыр.':'<b>Уақыт бітті.</b> Енді ешкім қозғалмайды.'):(S.left>0?'<b>Ауысуға болады!</b> Жаңа ақпаратқа қарап бұрышыңды өзгерт.':'<b>Тоқта!</b> Таңдау бекітілді.')}</span></div>`;
+  }
+  if(ph==='reveal'){
+    mid=`<div class="why"><div class="lbl">Ұсынылатын шешім · ${C.best}${C.before&&C.before!==C.best?' (бұрылысқа дейін — '+C.before+')':''}</div><p>${esc(C.why)}</p></div>
+      <div class="argue">Әр бұрыштан бір адам — 15 секунд, дәлелде!</div>`;
+  }
+  const hasTwistStep=!!C.twist;
+  let nextLabel='';
+  if(ph==='go') nextLabel=hasTwistStep?'Сюжет бұрылысы →':'Шешімді ашу →';
+  else if(ph==='twist') nextLabel='Шешімді ашу →';
+  else nextLabel=S.i<CASES.length-1?'Келесі кейс →':'Қорытынды →';
+  root.innerHTML=`${topBar(`<span class="eyebrow">Кейс ${S.i+1} / ${CASES.length}</span>`)}
+  <section class="board">
+    ${opts}
+    <article class="center">
+      ${showTwist?'<span class="stamp">Бұрылыс</span>':''}
+      <span class="no">КЕЙС №${S.i+1}</span>
+      <span class="title">${esc(C.title)}</span>
+      <div class="story">${esc(C.story)}</div>
+      ${ph!=='reveal'?`<div class="ask">${esc(C.ask)}</div>`:''}
+      ${showTwist?`<div class="twist"><div class="lbl">Сюжет бұрылысы</div><p>${esc(C.twist)}</p></div>`:''}
+      ${mid}
+      <div class="spacer"></div>
+      <div class="controls"><button class="btn ghost" id="back">←</button>${ph!=='reveal'?'<button class="btn ghost" id="more">+10 с</button>':''}<span class="spacer"></span><button class="btn solid" id="next">${nextLabel}</button></div>
+    </article>
+  </section>`;
+  document.getElementById('next').onclick=next;
+  document.getElementById('back').onclick=back;
+  const m=document.getElementById('more'); if(m) m.onclick=()=>{S.left=Math.min(S.left+10,90);paint();startTick();};
+}
+function finalView(){
+  root.innerHTML=`${topBar()}<section class="final"><div>
+    <div class="eyebrow">Ойын аяқталды</div><h1>Куратордың алтын ережелері</h1>
+    <p class="lead">Бұл шешімдердің бәрі бүгінгі жоспардағы қадамдармен сәйкес: жеке байланыс, деректер, кішкентай нақты мақсат.</p>
+    <div class="controls"><button class="btn ghost" id="back">←</button><button class="btn ghost" id="again">Басынан</button></div></div>
+    <ul class="sum">${CASES.map(c=>{const k=K.indexOf(c.best);return `<li><span class="k" style="background:var(--${CL[k]});color:var(--${CL[k]}-ink)">${c.best}</span><span><b>${esc(c.title)}.</b> ${esc(c.opts[k])}</span></li>`}).join('')}</ul>
+  </section>`;
+  document.getElementById('back').onclick=back;
+  document.getElementById('again').onclick=()=>{S={screen:'intro',i:0,phase:'go',left:GO};render();};
+}
+function paint(){
+  const n=document.getElementById('num'); if(!n) return;
+  const total=S.phase==='go'?GO:SWITCH;
+  n.textContent=S.left; document.getElementById('bar').style.width=(Math.min(S.left,total)/total*100)+'%';
+  n.parentElement.classList.toggle('low',S.left<=5);
+  const msg=document.getElementById('msg');
+  if(msg) msg.innerHTML=S.phase==='go'?(S.left>0?'<b>Бұрышыңа бар!</b> Таңдау уақыты жүріп жатыр.':'<b>Уақыт бітті.</b> Енді ешкім қозғалмайды.'):(S.left>0?'<b>Ауысуға болады!</b> Жаңа ақпаратқа қарап бұрышыңды өзгерт.':'<b>Тоқта!</b> Таңдау бекітілді.');
+}
+function startTick(){stopTick(); if(S.left<=0) return; tick=setInterval(()=>{S.left=Math.max(0,S.left-1);paint();if(S.left===0)stopTick();},1000);}
+function stopTick(){if(tick){clearInterval(tick);tick=null;}}
+function render(){stopTick(); if(S.screen==='intro') intro(); else if(S.screen==='case'){caseView(); if(S.phase!=='reveal') startTick();} else finalView();}
+function next(){
+  if(S.screen==='intro'){S={screen:'case',i:0,phase:'go',left:GO};return render();}
+  if(S.screen!=='case') return;
+  const C=CASES[S.i];
+  if(S.phase==='go'){ if(C.twist){S.phase='twist';S.left=SWITCH;} else S.phase='reveal'; return render(); }
+  if(S.phase==='twist'){S.phase='reveal';return render();}
+  if(S.i<CASES.length-1){S.i++;S.phase='go';S.left=GO;return render();}
+  S.screen='final';render();
+}
+function back(){
+  if(S.screen==='final'){S.screen='case';S.i=CASES.length-1;S.phase='reveal';return render();}
+  if(S.screen!=='case') return;
+  const C=CASES[S.i];
+  if(S.phase==='reveal'){ if(C.twist){S.phase='twist';S.left=0;} else {S.phase='go';S.left=0;} return render(); }
+  if(S.phase==='twist'){S.phase='go';S.left=0;return render();}
+  if(S.i>0){S.i--;S.phase='reveal';return render();}
+  S.screen='intro';render();
+}
+document.addEventListener('keydown',e=>{ if(e.key===' '||e.key==='ArrowRight'){e.preventDefault();next();} else if(e.key==='ArrowLeft'){e.preventDefault();back();} });
+render();
+</script>
+</body>
+</html>
