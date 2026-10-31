@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Қате аукционы · JUZ40 Smart Friday</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --ink:#170B25; --card:#22112F; --line:#4A3266;
+  --lilac:#D8BEF0; --violet:#B98AF0; --text:#F3EDF8; --muted:#C2B0D6;
+  --clean:#8FE3B5; --clean-ink:#0F2A1D; --error:#FF8F8F; --error-ink:#3A0D12; --gold:#FFD36E;
+  --display:'Oswald','Arial Narrow',Arial,sans-serif;
+  --body:'Montserrat',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--ink);color:var(--text);font-family:var(--body);overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+.bg{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(60vmax 60vmax at 78% 30%, rgba(154,90,216,.35), transparent 60%),
+    linear-gradient(transparent 47px, rgba(255,255,255,.04) 48px) 0 0/48px 48px,
+    linear-gradient(90deg, transparent 47px, rgba(255,255,255,.04) 48px) 0 0/48px 48px,
+    var(--ink)}
+.app{position:relative;z-index:1;min-height:100%;display:flex;flex-direction:column;
+  padding-block:max(clamp(14px,3vw,40px),env(safe-area-inset-top,0px)) max(clamp(14px,3vw,40px),env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{width:min(1440px,100%);margin:0 auto;flex:1;display:flex;flex-direction:column;gap:clamp(14px,2.2vw,30px)}
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:700;letter-spacing:.06em;font-size:clamp(16px,1.5vw,22px);color:var(--lilac)}
+.eyebrow{font-weight:700;font-size:clamp(12px,1vw,15px);letter-spacing:.2em;text-transform:uppercase;color:var(--violet)}
+.spacer{flex:1}
+.dots{display:flex;gap:5px}
+.dots i{width:22px;height:6px;border-radius:3px;background:var(--line)}
+.dots i.done{background:var(--violet)} .dots i.now{background:var(--lilac)}
+.btn{font:700 clamp(15px,1.2vw,18px)/1 var(--body);border-radius:999px;padding:14px 24px;border:2px solid var(--lilac);background:transparent;color:var(--lilac);cursor:pointer}
+.btn:focus-visible{outline:3px solid var(--text);outline-offset:3px}
+.btn.solid{background:var(--lilac);color:var(--ink)}
+.btn.ghost{border-color:var(--line);color:var(--muted)}
+.btn[disabled]{opacity:.4;cursor:default}
+.kbd{font-size:13px;color:var(--muted)} .kbd b{border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:var(--text)}
+.label{font-size:clamp(11px,.9vw,14px);font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--violet)}
+.tag{font-weight:700;font-size:clamp(11px,.95vw,14px);padding:6px 12px;border-radius:999px;background:var(--lilac);color:var(--ink);white-space:nowrap}
+.tag.x2{background:var(--gold);color:#2B1A00}
+.tag.line{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.panel{border:1px solid var(--line);border-radius:26px;padding:clamp(18px,2.2vw,32px);background:rgba(255,255,255,.035);display:flex;flex-direction:column;gap:16px}
+
+/* ---------- host lobby ---------- */
+.lobby{flex:1;display:grid;grid-template-columns:1.2fr 1fr;gap:clamp(24px,4vw,64px);align-items:center}
+.lobby h1,.final h1{font-family:var(--display);font-weight:700;text-transform:uppercase;line-height:.9;margin:10px 0 18px;font-size:clamp(60px,9vw,160px);color:var(--lilac)}
+.lead{font-size:clamp(17px,1.5vw,23px);line-height:1.45;max-width:36ch;margin:0 0 22px}
+.steps{display:grid;gap:10px;margin:0 0 26px;padding:0;list-style:none}
+.steps li{display:flex;gap:14px;align-items:baseline;font-size:clamp(15px,1.25vw,19px);color:var(--muted)}
+.steps li b{font-family:var(--display);color:var(--lilac);font-size:1.3em;min-width:1.2em}
+.qrcard{background:#F7F2FB;border-radius:28px;padding:clamp(16px,2vw,28px);display:flex;flex-direction:column;align-items:center;gap:14px;color:var(--ink)}
+#qr{width:min(360px,70vw);aspect-ratio:1;display:grid;place-items:center}
+#qr img,#qr canvas{width:100%!important;height:auto!important}
+.url{font:600 14px var(--body);word-break:break-all;text-align:center;color:#4d3a63}
+.joined{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:6px 12px;border-radius:999px;background:rgba(216,190,240,.12);border:1px solid var(--line);font-size:14px;font-weight:600}
+.status{font-size:14px;color:var(--muted)} .status.err{color:var(--error)}
+
+/* ---------- host lot ---------- */
+.stage{flex:1;display:grid;grid-template-columns:1.4fr 1fr;gap:clamp(18px,2.6vw,44px);align-items:start}
+.lot{position:relative;background:var(--card);border:1px solid var(--line);border-radius:30px;padding:clamp(20px,2.6vw,44px);display:flex;flex-direction:column;gap:clamp(12px,1.4vw,20px);box-shadow:0 30px 80px rgba(0,0,0,.35);min-width:0}
+.lot .head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lot .num{font-family:var(--display);font-weight:700;font-size:clamp(30px,3.2vw,54px);color:var(--lilac);line-height:1;margin-right:6px}
+.ctx{font-size:clamp(15px,1.3vw,20px);line-height:1.5;color:var(--muted);padding:14px 18px;border-left:3px solid var(--violet);background:rgba(185,138,240,.06);border-radius:0 12px 12px 0}
+.q{font-size:clamp(20px,2.1vw,34px);font-weight:700;line-height:1.3;text-wrap:balance}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.03);font-size:clamp(15px,1.35vw,21px);line-height:1.3;font-weight:600;min-width:0}
+.opt .k{flex:none;font-family:var(--display);font-weight:700;font-size:clamp(18px,1.6vw,26px);width:1.6em;height:1.6em;border-radius:10px;display:grid;place-items:center;background:var(--line);line-height:1}
+.opt.pick{border:2px solid var(--lilac);background:rgba(216,190,240,.12)} .opt.pick .k{background:var(--lilac);color:var(--ink)}
+.opt.right{border:2px solid var(--clean);background:rgba(143,227,181,.12)} .opt.right .k{background:var(--clean);color:var(--clean-ink)}
+.opt.wrong{border:2px solid var(--error);background:rgba(255,143,143,.1)} .opt.wrong .k{background:var(--error);color:var(--error-ink)}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match .col{display:flex;flex-direction:column;gap:10px}
+.student{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 18px;border-radius:16px;background:rgba(216,190,240,.1);border:2px dashed rgba(216,190,240,.5)}
+.student .who{font-size:clamp(12px,1vw,15px);font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--lilac)}
+.student .val{font-family:var(--display);font-weight:600;font-size:clamp(22px,2.2vw,36px);letter-spacing:.02em}
+.student.bad{border-color:var(--error);background:rgba(255,143,143,.08)} .student.bad .val{color:var(--error);text-decoration:line-through}
+.student.good{border-color:var(--clean);background:rgba(143,227,181,.08)} .student.good .val{color:var(--clean)}
+.stamp{position:absolute;right:clamp(14px,2.6vw,36px);top:clamp(14px,2.6vw,36px);font-family:var(--display);font-weight:700;font-size:clamp(30px,4vw,66px);text-transform:uppercase;padding:4px 20px;border:6px solid currentColor;border-radius:16px;transform:rotate(-9deg);animation:stamp .45s cubic-bezier(.2,1.6,.4,1) both;pointer-events:none;background:rgba(23,11,37,.6)}
+.stamp.clean{color:var(--clean)} .stamp.error{color:var(--error)}
+@keyframes stamp{0%{opacity:0;transform:rotate(-9deg) scale(2.4)}100%{opacity:1;transform:rotate(-9deg) scale(1)}}
+.side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.timer{display:flex;align-items:center;gap:clamp(14px,1.8vw,26px)}
+.ring{position:relative;width:clamp(110px,11vw,180px);aspect-ratio:1;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:10}
+.ring .track{stroke:var(--line)} .ring .bar{stroke:var(--lilac);stroke-linecap:round;transition:stroke-dashoffset .3s linear}
+.ring.low .bar{stroke:var(--gold)}
+.ring .t{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:clamp(38px,4vw,68px);font-variant-numeric:tabular-nums}
+.msg{font-size:clamp(15px,1.3vw,20px);line-height:1.4;color:var(--muted)} .msg b{color:var(--text)}
+.meter{height:12px;border-radius:6px;background:var(--line);overflow:hidden} .meter i{display:block;height:100%;background:var(--lilac);transition:width .3s}
+.big{font-family:var(--display);font-weight:700;font-size:clamp(28px,2.6vw,44px);font-variant-numeric:tabular-nums}
+.verdict h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(30px,3.2vw,54px);margin:0;line-height:1}
+.verdict.clean h2{color:var(--clean)} .verdict.error h2{color:var(--error)}
+.verdict p{margin:0;font-size:clamp(15px,1.3vw,20px);line-height:1.5}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.split div{border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:baseline;font-weight:700}
+.split .y{background:rgba(143,227,181,.12);color:var(--clean)} .split .n{background:rgba(255,143,143,.12);color:var(--error)}
+.board{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.board li{display:grid;grid-template-columns:2em 1fr auto auto;gap:10px;align-items:center;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.04);font-weight:600;font-variant-numeric:tabular-nums}
+.board .pl{font-family:var(--display);color:var(--lilac)}
+.board .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.board .d.up{color:var(--clean)} .board .d.down{color:var(--error)}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* ---------- final ---------- */
+.final{flex:1;display:grid;grid-template-columns:1fr 1.1fr;gap:clamp(24px,4vw,64px);align-items:center}
+.podium{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:end;gap:12px}
+.step{border-radius:20px 20px 8px 8px;padding:16px 10px;text-align:center;display:flex;flex-direction:column;gap:8px;justify-content:flex-end;background:rgba(216,190,240,.1);border:1px solid var(--line);min-width:0}
+.step .place{font-family:var(--display);font-weight:700;font-size:clamp(32px,3.4vw,54px);color:var(--lilac);line-height:1}
+.step .nm{font-weight:700;font-size:clamp(14px,1.3vw,20px);overflow-wrap:anywhere}
+.step .sc{font-family:var(--display);font-size:clamp(18px,1.6vw,26px);color:var(--muted)}
+.step.p1{min-height:clamp(220px,24vw,330px);background:rgba(255,211,110,.14);border-color:rgba(255,211,110,.5)} .step.p1 .place{color:var(--gold)}
+.step.p2{min-height:clamp(180px,19vw,260px)} .step.p3{min-height:clamp(150px,15vw,210px)}
+canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:5}
+
+/* ---------- player (phone) ---------- */
+.ply{width:min(560px,100%);margin:0 auto;display:flex;flex-direction:column;gap:16px;flex:1}
+.ply h1{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(44px,13vw,72px);line-height:.92;margin:4px 0 6px;color:var(--lilac)}
+.field{display:flex;flex-direction:column;gap:8px}
+.field input{font:600 18px var(--body);padding:16px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--text)}
+.field input:focus-visible{outline:2px solid var(--lilac);outline-offset:1px}
+.ply .lot{border-radius:22px;padding:18px;gap:12px;box-shadow:none}
+.ply .q{font-size:19px} .ply .opt{font-size:15px;padding:10px 12px} .ply .opts,.ply .match{grid-template-columns:1fr}
+.ply .student .val{font-size:22px} .ply .ctx{font-size:14px}
+.vote{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vote button{font:800 20px var(--display);letter-spacing:.04em;padding:22px 10px;border-radius:18px;border:2px solid var(--line);background:var(--card);color:var(--text);cursor:pointer}
+.vote .y[aria-pressed="true"]{background:var(--clean);border-color:var(--clean);color:var(--clean-ink)}
+.vote .n[aria-pressed="true"]{background:var(--error);border-color:var(--error);color:var(--error-ink)}
+.stakes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stakes button{font:700 18px var(--body);padding:14px 6px;border-radius:14px;border:2px solid var(--line);background:transparent;color:var(--text);cursor:pointer;font-variant-numeric:tabular-nums}
+.stakes button[aria-pressed="true"]{border-color:var(--lilac);background:rgba(216,190,240,.15);color:var(--lilac)}
+.vote button:focus-visible,.stakes button:focus-visible{outline:3px solid var(--text);outline-offset:2px}
+.scorebar{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-weight:700}
+.scorebar .big{font-size:28px}
+.result{text-align:center;padding:24px 16px;border-radius:22px}
+.result.win{background:rgba(143,227,181,.14);border:1px solid rgba(143,227,181,.5)}
+.result.lose{background:rgba(255,143,143,.12);border:1px solid rgba(255,143,143,.45)}
+.result.none{background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.result .delta{font-family:var(--display);font-weight:700;font-size:56px;line-height:1}
+.result.win .delta{color:var(--clean)} .result.lose .delta{color:var(--error)}
+.note{font-size:14px;color:var(--muted);line-height:1.45;text-align:center}
+
+@media (max-width:900px){ .lobby,.stage,.final{grid-template-columns:1fr} .opts,.match{grid-template-columns:1fr} }
+@media (prefers-reduced-motion:reduce){ .stamp{animation:none} .ring .bar,.meter i{transition:none} }
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="app"><div class="wrap" id="root"></div></div>
+
+<script>
+/* ================= ЛОТТАР (ҰБТ форматы) =================
+   type: single | multi | match | context
+   student — «оқушының» жауабы, ans — дұрыс жауап. ok = student === ans */
+const LOTS=[
+ {type:'single',fmt:'Бір жауапты',topic:'Кинематика',
+  q:'Дене тыныштықтан 2 м/с² үдеумен қозғала бастады. Ол тек 3-секундта қанша жол жүреді?',
+  opts:['9 м','5 м','4 м','3 м'],student:'A',ans:'B',
+  why:'Тұзақ — «3 секундта» емес, «3-секундта». s(3) − s(2) = 9 − 4 = 5 м. Басқа жолмен: sₙ = a(2n − 1)/2 = 2·5/2 = 5 м. Оқушы 3 секундтағы толық жолды (9 м) алған.'},
+ {type:'multi',fmt:'Бірнеше жауапты',topic:'Шамалар',
+  q:'Векторлық шамаларды таңдаңыз.',
+  opts:['Импульс','Жұмыс','Күш','Қуат','Үдеу','Масса'],student:'A, C, E',ans:'A, C, E',
+  why:'Импульс, күш және үдеудің бағыты бар — олар вектор. Жұмыс, қуат, масса — скаляр. Оқушы үшеуін де тапқан, артығын белгілемеген.'},
+ {type:'match',fmt:'Сәйкестендіру',topic:'Магнетизм',
+  q:'Шама мен оның өлшем бірлігін сәйкестендіріңіз.',
+  left:['Индуктивтілік','Магнит ағыны','Магнит индукциясы'],right:['Тл','Вб','Гн'],
+  student:'1–C, 2–A, 3–B',ans:'1–C, 2–B, 3–A',
+  why:'Индуктивтілік — генри (Гн), магнит ағыны — вебер (Вб), магнит индукциясы — тесла (Тл). Оқушы вебер мен тесланы ауыстырып алған: ҰБТ-дағы ең жиі шатасу.'},
+ {type:'context',fmt:'Контекстік',topic:'Динамика',
+  ctx:'Массасы 60 кг Айнұр лифтте таразы үстінде тұр. Лифт төмен қарай 2 м/с² үдеумен жылдамдығын арттырып келеді. g = 10 м/с².',
+  q:'Таразы қандай салмақты көрсетеді?',
+  opts:['720 Н','600 Н','480 Н','120 Н'],student:'C',ans:'C',
+  why:'Үдеу төмен бағытталған, сондықтан P = m(g − a) = 60 · 8 = 480 Н. Егер үдеу жоғары болса, 60 · 12 = 720 Н шығар еді.'},
+ {type:'single',fmt:'Бір жауапты',topic:'Электр',
+  q:'Кедергілері 4 Ом екі бірдей резисторды тізбектей қосудан параллель қосуға ауыстырды. Жалпы кедергі неше есе азаяды?',
+  opts:['2 есе','4 есе','8 есе','Өзгермейді'],student:'B',ans:'B',
+  why:'Тізбектей: 4 + 4 = 8 Ом. Параллель: 4 / 2 = 2 Ом. 8 / 2 = 4 есе азаяды.'},
+ {type:'multi',fmt:'Бірнеше жауапты',topic:'Оптика',
+  q:'Жазық айнадағы кескін туралы дұрыс тұжырымдарды таңдаңыз.',
+  opts:['Жалған','Нақты','Тура','Төңкерілген','Затпен өлшемдес','Үлкейтілген'],student:'B, C, E',ans:'A, C, E',
+  why:'Жазық айнадағы кескін жалған (сәулелердің өздері емес, созындылары қиылысады), тура және затпен өлшемдес. Оқушы «жалғанның» орнына «нақтыны» белгілеген.'},
+ {type:'match',fmt:'Сәйкестендіру',topic:'Термодинамика',
+  q:'Изопроцесс пен оның шартын сәйкестендіріңіз.',
+  left:['Изотермалық','Изобаралық','Изохоралық'],right:['V = const','T = const','p = const'],
+  student:'1–B, 2–C, 3–A',ans:'1–B, 2–C, 3–A',
+  why:'Изотермалық — T тұрақты, изобаралық — p тұрақты, изохоралық — V тұрақты. Барлығы дұрыс сәйкестендірілген.'},
+ {type:'context',fmt:'Контекстік',topic:'Электр энергиясы',
+  ctx:'Қуаты 2 кВт электр шәйнегі суды 5 минутта қайнатады. Электр энергиясының тарифі — 1 кВт·сағ үшін 25 теңге.',
+  q:'Бір рет қайнатуға қанша теңге жұмсалады?',
+  opts:['≈ 4 тг','250 тг','10 тг','≈ 42 тг'],student:'B',ans:'A',
+  why:'Минутты сағатқа ауыстыру керек: 5 мин = 1/12 сағ. W = 2 · 1/12 ≈ 0,17 кВт·сағ, құны ≈ 0,17 · 25 ≈ 4,2 тг. Оқушы 2 · 5 · 25 = 250 деп минутты ауыстырмаған.'},
+ {type:'single',fmt:'Бір жауапты',topic:'Кинематика',
+  q:'Жылдамдық–уақыт графигі уақыт осінен жоғары, оған параллель түзу. Бұл қандай қозғалыс?',
+  opts:['Дене тыныштықта','Бірқалыпты түзусызықты','Бірқалыпты үдемелі','Еркін түсу'],student:'A',ans:'B',
+  why:'v(t) графигінде түзу оське параллель — жылдамдық тұрақты және нөлден үлкен: бірқалыпты қозғалыс. Тыныштық болу үшін түзу осьтің өзімен беттесуі керек. Оқушы x(t) графигімен шатастырған.'},
+ {type:'single',fmt:'Бір жауапты · жоғары деңгей',topic:'Механика',double:true,
+  q:'Дене тік жоғары лақтырылды, ауа кедергісі ескерілмейді. Ең жоғарғы нүктеде:',
+  opts:['v = 0, a = 0','v = 0, a = g','v ең үлкен, a = 0','v = 0, a артады'],student:'A',ans:'B',
+  why:'Ең жоғарғы нүктеде жылдамдық бір сәтке нөлге тең, бірақ дене түсе бастайды, өйткені ауырлық күші әрекет етеді: a = g барлық уақытта. «Тоқтады — демек үдеу де нөл» — ең жиі қате.'}
+];
+LOTS.forEach(l=>l.ok=l.student===l.ans);
+const K='ABCDEF';
+const BET=25, START=1000;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const root=document.getElementById('root');
+const params=new URLSearchParams(location.search);
+const JOIN=params.get('join');
+const ICE={config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'}]}};
+const ls={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+
+/* ---------- ортақ рендер бөліктері ---------- */
+function letters(s){return s.split(',').map(x=>x.trim()).filter(Boolean)}
+function lotBody(L,reveal){
+  let h='';
+  if(L.ctx) h+=`<div class="ctx">${esc(L.ctx)}</div>`;
+  h+=`<div class="q">${esc(L.q)}</div>`;
+  if(L.type==='match'){
+    h+=`<div class="match"><div class="col">${L.left.map((x,k)=>`<div class="opt"><span class="k">${k+1}</span><span>${esc(x)}</span></div>`).join('')}</div>
+        <div class="col">${L.right.map((x,k)=>`<div class="opt"><span class="k">${K[k]}</span><span>${esc(x)}</span></div>`).join('')}</div></div>`;
+  }else{
+    const st=letters(L.student), an=letters(L.ans);
+    h+=`<div class="opts">${L.opts.map((o,k)=>{
+      const l=K[k]; let c='opt';
+      if(reveal){ if(an.includes(l)) c+=' right'; else if(st.includes(l)) c+=' wrong'; }
+      else if(st.includes(l)) c+=' pick';
+      return `<div class="${c}"><span class="k">${l}</span><span>${esc(o)}</span></div>`;}).join('')}</div>`;
+  }
+  const cls=reveal?(L.ok?'good':'bad'):'';
+  h+=`<div class="student ${cls}"><span class="who">Оқушының жауабы</span><span class="val">${esc(L.student)}</span>${reveal&&!L.ok?`<span class="who" style="color:var(--clean)">Дұрысы</span><span class="val" style="color:var(--clean)">${esc(L.ans)}</span>`:''}</div>`;
+  return h;
+}
+function tags(L){return `<span class="tag line">${esc(L.fmt)}</span><span class="tag line">${esc(L.topic)}</span>${L.double?'<span class="tag x2">Ставка ×2</span>':''}`}
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const c=document.getElementById('fx'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
+  const cols=['#D8BEF0','#B98AF0','#FFD36E','#8FE3B5','#F3EDF8'];
+  const P=Array.from({length:200},()=>({x:Math.random()*c.width,y:-20-Math.random()*c.height*.5,vx:(Math.random()-.5)*4,vy:2+Math.random()*4,r:4+Math.random()*6,a:Math.random()*6,va:(Math.random()-.5)*.3,c:cols[Math.floor(Math.random()*cols.length)]}));
+  let f=0;(function loop(){x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.05;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r,-p.r/2,p.r*2,p.r);x.restore();});if(++f<280)requestAnimationFrame(loop);else x.clearRect(0,0,c.width,c.height);})();
+}
+
+/* ================= ХОСТ (экран) ================= */
+function host(){
+  const saved=ls.get('ka_host');
+  let H=saved&&saved.v===2?saved:{v:2,id:'juz40sf-'+Math.random().toString(36).slice(2,8),phase:'lobby',i:0,left:BET,revealed:{},players:{}};
+  // players: {pid:{name, bets:{i:{v:'yes'|'no',stake}}}}
+  const conns=new Map(); let peer=null, tick=null, netState='Байланыс орнатылып жатыр…', netErr=false, tries=0;
+  const save=()=>ls.set('ka_host',H);
+  const joinUrl=()=>location.origin+location.pathname+'?join='+H.id;
+
+  function scoreOf(p){let s=START;for(const [i,b] of Object.entries(p.bets||{})){if(!H.revealed[i])continue;const L=LOTS[i];s+=((b.v==='yes')===L.ok?1:-1)*b.stake*(L.double?2:1);}return s}
+  function deltaOf(p,i){const b=(p.bets||{})[i];if(!b||!H.revealed[i])return null;const L=LOTS[i];return ((b.v==='yes')===L.ok?1:-1)*b.stake*(L.double?2:1)}
+  function ranking(){return Object.entries(H.players).map(([pid,p])=>({pid,name:p.name,score:scoreOf(p)})).sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name))}
+  function betsCount(){let n=0;for(const p of Object.values(H.players)) if(p.bets&&p.bets[H.i]) n++;return n}
+
+  function stateFor(pid){
+    const p=H.players[pid]; const rk=ranking(); const pos=rk.findIndex(r=>r.pid===pid);
+    const base={t:'state',phase:H.phase,i:H.i,n:LOTS.length,left:H.left,score:p?scoreOf(p):START,rank:pos+1,total:rk.length};
+    if(H.phase==='bet'||H.phase==='reveal'){
+      const L=LOTS[H.i]; const rev=!!H.revealed[H.i];
+      const pub={type:L.type,fmt:L.fmt,topic:L.topic,ctx:L.ctx,q:L.q,opts:L.opts,left:L.left,right:L.right,student:L.student,double:!!L.double};
+      if(rev){pub.ans=L.ans;pub.ok=L.ok;pub.why=L.why;}
+      base.lot=pub; base.reveal=rev; base.bet=p&&p.bets?p.bets[H.i]||null:null; base.delta=p?deltaOf(p,H.i):null;
+    }
+    if(H.phase==='final') base.top=rk.slice(0,3).map(r=>({name:r.name,score:r.score}));
+    return base;
+  }
+  function send(pid){const c=conns.get(pid);if(c&&c.open){try{c.send(stateFor(pid))}catch(e){}}}
+  function broadcast(){for(const pid of conns.keys()) send(pid)}
+
+  function startPeer(){
+    if(typeof Peer==='undefined'){netState='Желі кітапханасы жүктелмеді. Интернетті тексеріп, бетті жаңартыңыз.';netErr=true;render();return;}
+    peer=new Peer(H.id,ICE);
+    peer.on('open',()=>{netState='Дайын. Кураторлар QR арқылы кіре алады.';netErr=false;tries=0;render();});
+    peer.on('disconnected',()=>{netState='Сигнал серверімен байланыс үзілді, қайта қосылып жатыр…';netErr=true;render();setTimeout(()=>{try{peer.reconnect()}catch(e){}},1500);});
+    peer.on('error',e=>{
+      if(e.type==='unavailable-id'&&tries<6){tries++;netState='Бұрынғы сессия жабылуын күтіп жатыр…';render();try{peer.destroy()}catch(_){}setTimeout(startPeer,3000);return;}
+      if(e.type==='peer-unavailable')return;
+      netState='Желі қатесі: '+e.type+'. Бетті жаңартып көріңіз.';netErr=true;render();
+    });
+    peer.on('connection',conn=>{
+      conn.on('data',m=>{
+        if(!m||typeof m!=='object')return;
+        if(m.t==='hello'&&typeof m.pid==='string'){
+          const pid=m.pid.slice(0,40), name=String(m.name||'').trim().slice(0,40)||'Куратор';
+          conns.set(pid,conn); conn._pid=pid;
+          if(!H.players[pid]) H.players[pid]={name,bets:{}}; else H.players[pid].name=name;
+          save(); send(pid); render();
+        }
+        if(m.t==='bet'&&conn._pid){
+          const p=H.players[conn._pid]; if(!p)return;
+          if(H.phase!=='bet'||H.revealed[H.i]||H.left<=0||m.i!==H.i)return send(conn._pid);
+          const v=m.v==='yes'?'yes':m.v==='no'?'no':null; const stake=[100,200,300].includes(m.stake)?m.stake:null;
+          if(!v||!stake)return;
+          p.bets[H.i]={v,stake}; save(); send(conn._pid); paintLive();
+        }
+      });
+      conn.on('close',()=>{if(conn._pid&&conns.get(conn._pid)===conn){conns.delete(conn._pid);render();}});
+    });
+  }
+
+  function startTick(){stopTick();tick=setInterval(()=>{if(H.left>0){H.left--;save();paintTimer();broadcast();if(H.left===0)stopTick();}},1000)}
+  function stopTick(){if(tick){clearInterval(tick);tick=null}}
+
+  function goLot(i){H.phase='bet';H.i=i;H.left=BET;delete H.revealed[i];save();render();startTick();broadcast();}
+  function reveal(){stopTick();H.revealed[H.i]=true;H.phase='reveal';save();render();broadcast();}
+  function advance(){
+    if(H.phase==='lobby')return goLot(0);
+    if(H.phase==='bet')return reveal();
+    if(H.phase==='reveal'){ if(H.i<LOTS.length-1) return goLot(H.i+1); H.phase='final';save();render();broadcast();setTimeout(confetti,300);return;}
+  }
+  function back(){
+    stopTick();
+    if(H.phase==='final'){H.phase='reveal';H.i=LOTS.length-1;}
+    else if(H.phase==='reveal'){delete H.revealed[H.i];H.phase='bet';H.left=0;}
+    else if(H.phase==='bet'){ if(H.i>0){H.i--;H.phase='reveal';H.revealed[H.i]=true;} else H.phase='lobby'; }
+    save();render();broadcast();
+  }
+  function resetGame(){stopTick();H.phase='lobby';H.i=0;H.left=BET;H.revealed={};for(const p of Object.values(H.players))p.bets={};save();render();broadcast();}
+
+  function topBar(extra=''){
+    const dots=LOTS.map((_,k)=>`<i class="${H.phase==='final'||k<H.i?'done':((H.phase==='bet'||H.phase==='reveal')&&k===H.i?'now':'')}"></i>`).join('');
+    return `<div class="top"><span class="brand">JUZ40 · SMART FRIDAY</span><span class="spacer"></span>${extra}<span class="tag line" title="Қосылған кураторлар">● ${conns.size} онлайн</span><div class="dots" aria-hidden="true">${dots}</div></div>`;
+  }
+  function renderLobby(){
+    const names=Object.entries(H.players).filter(([pid])=>conns.has(pid)).map(([,p])=>p.name);
+    root.innerHTML=`${topBar()}
+    <section class="lobby">
+      <div>
+        <div class="eyebrow">Сергіту сәті · әр куратор жеке ойнайды</div>
+        <h1>Қате аукционы</h1>
+        <p class="lead">ҰБТ форматындағы сұрақ пен «оқушының» жауабы шығады. Ол дұрыс па, әлде қате ме? Телефоннан ставка қойыңыз.</p>
+        <ol class="steps">
+          <li><b>1</b>QR-ды телефон камерасымен сканерлеп, атыңызды жазыңыз.</li>
+          <li><b>2</b>Әр лотта «Дұрыс» не «Қате» таңдап, 100, 200 не 300 ұпай тігіңіз.</li>
+          <li><b>3</b>Бастапқы ұпай — 1000. Ең көп жинаған үшеу жеңеді. Соңғы лотта ставка ×2.</li>
+        </ol>
+        <div class="controls"><button class="btn solid" id="go" ${names.length?'':'disabled'}>Аукционды бастау</button><button class="btn ghost" id="reset">Жаңа ойын</button><span class="kbd"><b>Space</b> / <b>→</b> — келесі қадам</span></div>
+      </div>
+      <div class="side">
+        <div class="qrcard"><div id="qr" aria-label="Қосылу QR-коды"></div><div class="url">${esc(joinUrl())}</div></div>
+        <div class="status ${netErr?'err':''}" id="net">${esc(netState)}</div>
+        <div class="label">Қосылғандар · ${names.length}</div>
+        <div class="joined">${names.map(n=>`<span class="chip">${esc(n)}</span>`).join('')||'<span class="status">Әзірге ешкім жоқ</span>'}</div>
+      </div>
+    </section>`;
+    const q=document.getElementById('qr');
+    if(!/^https?:$/.test(location.protocol)){q.innerHTML='<span class="status err" style="text-align:center">Бет сайтта ашылмаған, сондықтан QR жасалмайды. Ойынды сайттағы мекенжайынан ашыңыз.</span>';}
+    else if(typeof QRCode!=='undefined'){new QRCode(q,{text:joinUrl(),width:512,height:512,colorDark:'#170B25',colorLight:'#F7F2FB',correctLevel:QRCode.CorrectLevel.M});}
+    else q.innerHTML='<span class="status">QR жүктелмеді — сілтемені көрсетіңіз</span>';
+    document.getElementById('go').onclick=()=>goLot(0);
+    document.getElementById('reset').onclick=()=>{ if(document.getElementById('reset').dataset.c){ls.del('ka_host');location.reload();} else {document.getElementById('reset').dataset.c='1';document.getElementById('reset').textContent='Растау: бәрін өшіру';} };
+  }
+  function renderLot(){
+    const L=LOTS[H.i], rev=!!H.revealed[H.i];
+    const C=2*Math.PI*54;
+    let right;
+    if(!rev){
+      right=`<div class="panel">
+        <div class="timer"><div class="ring" id="ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="track" cx="60" cy="60" r="54"/><circle class="bar" id="bar" cx="60" cy="60" r="54" stroke-dasharray="${C}"/></svg><div class="t" id="t"></div></div><div class="msg" id="msg"></div></div>
+        <div class="label">Ставка қойғандар</div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="big" id="cnt"></span><span class="status" id="cntOf"></span></div>
+        <div class="meter"><i id="meter"></i></div>
+      </div>
+      <div class="controls"><button class="btn ghost" id="back">←</button><button class="btn ghost" id="more">+10 с</button><span class="spacer"></span><button class="btn solid" id="rev">Жауапты ашу</button></div>`;
+    }else{
+      let y=0,n=0; for(const p of Object.values(H.players)){const b=p.bets&&p.bets[H.i]; if(b){b.v==='yes'?y++:n++;}}
+      const rk=ranking().slice(0,5);
+      right=`<div class="panel verdict ${L.ok?'clean':'error'}">
+        <div class="label">Жауап ашылды</div>
+        <h2>${L.ok?'Оқушы дұрыс тапты':'Оқушы қателесті'}</h2>
+        <p>${esc(L.why)}</p>
+        <div class="split"><div class="y"><span>Дұрыс дегендер</span><span>${y}</span></div><div class="n"><span>Қате дегендер</span><span>${n}</span></div></div>
+      </div>
+      <div class="panel"><div class="label">Үздік бестік</div><ol class="board">${rk.map((r,k)=>{const d=deltaOf(H.players[r.pid],H.i);return `<li><span class="pl">${k+1}</span><span class="nm">${esc(r.name)}</span><span class="d ${d>0?'up':d<0?'down':''}">${d==null?'—':(d>0?'+':'')+d}</span><span>${r.score}</span></li>`}).join('')||'<li><span></span><span class="nm">Ойыншы жоқ</span></li>'}</ol></div>
+      <div class="controls"><button class="btn ghost" id="back">←</button><span class="spacer"></span><button class="btn solid" id="next">${H.i<LOTS.length-1?'Келесі лот →':'Нәтижеге →'}</button></div>`;
+    }
+    root.innerHTML=`${topBar(`<span class="eyebrow">Лот ${H.i+1} / ${LOTS.length}</span>`)}
+    <section class="stage">
+      <article class="lot"><div class="head"><span class="num">ЛОТ №${H.i+1}</span>${tags(L)}</div>${lotBody(L,rev)}${rev?`<div class="stamp ${L.ok?'clean':'error'}">${L.ok?'Дұрыс':'Қате'}</div>`:''}</article>
+      <aside class="side">${right}</aside>
+    </section>`;
+    document.getElementById('back').onclick=back;
+    if(rev) document.getElementById('next').onclick=advance;
+    else{document.getElementById('rev').onclick=reveal;document.getElementById('more').onclick=()=>{H.left=Math.min(H.left+10,99);save();startTick();paintTimer();broadcast();};paintTimer();paintLive();}
+  }
+  function paintTimer(){
+    const t=document.getElementById('t');if(!t)return;const C=2*Math.PI*54;
+    t.textContent=H.left;document.getElementById('bar').style.strokeDashoffset=C*(1-Math.min(H.left,BET)/BET);
+    document.getElementById('ring').classList.toggle('low',H.left<=5);
+    document.getElementById('msg').innerHTML=H.left>0?'<b>Ставка қабылданып жатыр.</b> Телефоннан таңдауыңызды жасаңыз.':'<b>Ставка жабық.</b> Жауапты ашамыз.';
+  }
+  function paintLive(){
+    const c=document.getElementById('cnt');if(!c)return;const total=Math.max(conns.size,Object.keys(H.players).length?conns.size:0);
+    const n=betsCount(); c.textContent=n; document.getElementById('cntOf').textContent='онлайн: '+conns.size;
+    document.getElementById('meter').style.width=(conns.size?Math.min(100,n/conns.size*100):0)+'%';
+  }
+  function renderFinal(){
+    const rk=ranking(); const t=[rk[0],rk[1],rk[2]];
+    root.innerHTML=`${topBar()}
+    <section class="final">
+      <div>
+        <div class="eyebrow">Аукцион жабылды</div>
+        <h1>Ең зерек кураторлар</h1>
+        <div class="panel"><div class="label">Толық рейтинг</div><ol class="board" style="max-height:38vh;overflow:auto">${rk.map((r,k)=>`<li><span class="pl">${k+1}</span><span class="nm">${esc(r.name)}</span><span></span><span>${r.score}</span></li>`).join('')}</ol></div>
+        <div class="controls" style="margin-top:16px"><button class="btn ghost" id="back">←</button><button class="btn ghost" id="again">Басынан ойнау</button><button class="btn solid" id="party">Құттықтау</button></div>
+      </div>
+      <div class="podium">${[1,0,2].map(k=>{const r=t[k];return `<div class="step p${k+1}"><div class="place">${k+1}</div><div class="nm">${r?esc(r.name):'—'}</div><div class="sc">${r?r.score:''}</div></div>`}).join('')}</div>
+    </section>`;
+    document.getElementById('back').onclick=back;
+    document.getElementById('again').onclick=resetGame;
+    document.getElementById('party').onclick=confetti;
+  }
+  function render(){
+    if(H.phase==='lobby')renderLobby();
+    else if(H.phase==='final')renderFinal();
+    else{
+      const net=document.getElementById('net'); renderLot();
+    }
+  }
+  document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON'&&e.key===' ')return;
+    if(e.key===' '||e.key==='ArrowRight'){e.preventDefault(); if(H.phase==='lobby'&&!Object.keys(H.players).length)return; advance();}
+    else if(e.key==='ArrowLeft'){e.preventDefault();back();}});
+  save(); render(); startPeer();
+  if(H.phase==='bet'&&!H.revealed[H.i]&&H.left>0) startTick();
+}
+
+/* ================= ОЙЫНШЫ (телефон) ================= */
+function player(hostId){
+  let me=ls.get('ka_me'); if(!me||typeof me.pid!=='string'){me={pid:'p'+Math.random().toString(36).slice(2,10),name:''};}
+  let peer=null, conn=null, st=null, net='Қосылып жатыр…', draft={v:null,stake:null}, lastI=-1, retry=null;
+
+  function connect(){
+    if(typeof Peer==='undefined'){net='Желі кітапханасы жүктелмеді. Бетті жаңартыңыз.';render();return;}
+    if(!peer||peer.destroyed){
+      peer=new Peer(undefined,ICE);
+      peer.on('open',()=>dial());
+      peer.on('disconnected',()=>{setTimeout(()=>{try{peer.reconnect()}catch(e){}},1500)});
+      peer.on('error',e=>{ if(e.type==='peer-unavailable'){net='Хост табылмады. Жүргізуші экраны ашық па? Қайта қосылып жатыр…';render();schedule();} else {net='Желі қатесі ('+e.type+'). Қайта қосылып жатыр…';render();schedule();} });
+    } else dial();
+  }
+  function dial(){
+    conn=peer.connect(hostId,{reliable:true});
+    conn.on('open',()=>{net='';conn.send({t:'hello',pid:me.pid,name:me.name});});
+    conn.on('data',m=>{if(m&&m.t==='state'){st=m; if(st.i!==lastI){draft={v:st.bet?st.bet.v:null,stake:st.bet?st.bet.stake:null};lastI=st.i;} render();}});
+    conn.on('close',()=>{net='Байланыс үзілді, қайта қосылып жатыр…';render();schedule();});
+  }
+  function schedule(){clearTimeout(retry);retry=setTimeout(connect,2500)}
+  function sendBet(){if(conn&&conn.open&&draft.v&&draft.stake) conn.send({t:'bet',i:st.i,v:draft.v,stake:draft.stake});}
+
+  function renderJoin(){
+    root.innerHTML=`<div class="ply">
+      <span class="brand">JUZ40 · SMART FRIDAY</span>
+      <h1>Қате аукционы</h1>
+      <p class="note" style="text-align:left">Атыңызды жазыңыз — ол рейтингте көрінеді.</p>
+      <form class="field" id="f"><label class="label" for="nm">Аты-жөніңіз</label><input id="nm" maxlength="40" autocomplete="name" placeholder="Мысалы, Әсел Б." value="${esc(me.name)}" required><button class="btn solid" style="margin-top:8px">Ойынға кіру</button></form>
+    </div>`;
+    document.getElementById('f').onsubmit=e=>{e.preventDefault();const v=document.getElementById('nm').value.trim();if(!v)return;me.name=v.slice(0,40);ls.set('ka_me',me);render();connect();};
+  }
+  function scorebar(){return st?`<div class="scorebar"><span>Ұпайыңыз</span><span class="big">${st.score}</span><span>${st.total?st.rank+' / '+st.total+' орын':''}</span></div>`:''}
+  function render(){
+    if(!me.name) return renderJoin();
+    if(!st){root.innerHTML=`<div class="ply"><span class="brand">JUZ40 · SMART FRIDAY</span><h1>Сәлем, ${esc(me.name)}!</h1><p class="note">${esc(net||'Хостқа қосылдыңыз. Ойын басталуын күтіңіз.')}</p></div>`;return;}
+    const warn=net?`<p class="note" style="color:var(--error)">${esc(net)}</p>`:'';
+    if(st.phase==='lobby'){root.innerHTML=`<div class="ply"><span class="brand">JUZ40 · SMART FRIDAY</span><h1>Сіз ойындасыз!</h1>${scorebar()}<p class="note">Жүргізуші бастағанша күтіңіз. Бастапқы ұпай — 1000.</p>${warn}</div>`;return;}
+    if(st.phase==='final'){
+      const won=st.rank>=1&&st.rank<=3;
+      root.innerHTML=`<div class="ply"><span class="brand">JUZ40 · SMART FRIDAY</span><h1>${won?st.rank+'-орын!':'Ойын аяқталды'}</h1>${scorebar()}
+        <div class="panel"><div class="label">Үздік үштік</div><ol class="board">${(st.top||[]).map((r,k)=>`<li><span class="pl">${k+1}</span><span class="nm">${esc(r.name)}</span><span></span><span>${r.score}</span></li>`).join('')}</ol></div>${warn}</div>`;
+      if(won) setTimeout(confetti,200); return;
+    }
+    const L=st.lot, rev=st.reveal, locked=rev||st.left<=0;
+    let action='';
+    if(!rev){
+      action=`<div class="label">Оқушы дұрыс тапты ма?</div>
+      <div class="vote"><button class="y" aria-pressed="${draft.v==='yes'}" ${locked?'disabled':''} data-v="yes">ДҰРЫС</button><button class="n" aria-pressed="${draft.v==='no'}" ${locked?'disabled':''} data-v="no">ҚАТЕ</button></div>
+      <div class="label">Ставка${L.double?' · бұл лотта ×2':''}</div>
+      <div class="stakes">${[100,200,300].map(s=>`<button aria-pressed="${draft.stake===s}" ${locked?'disabled':''} data-s="${s}">${s}</button>`).join('')}</div>
+      <p class="note">${locked?(st.bet?`Ставка жабық. Сіздікі: <b>${st.bet.v==='yes'?'Дұрыс':'Қате'} · ${st.bet.stake}</b>`:'Ставка жабық. Бұл лотқа ставка қойылмады.'):(st.bet&&st.bet.v===draft.v&&st.bet.stake===draft.stake?`Қабылданды ✓ · ${st.left} с ішінде өзгертуге болады`:`Қалды: ${st.left} с · таңдау мен ставканы белгілеңіз`)}</p>`;
+    }else{
+      const d=st.delta;
+      action=`<div class="result ${d==null?'none':d>0?'win':'lose'}"><div class="delta">${d==null?'0':(d>0?'+':'')+d}</div><p>${d==null?'Бұл лотқа ставка қойылмады.':d>0?'Дұрыс таптыңыз!':'Бұл жолы қателестіңіз.'}</p></div>
+      <div class="panel verdict ${L.ok?'clean':'error'}"><h2 style="font-size:28px">${L.ok?'Оқушы дұрыс':'Оқушы қателесті'}</h2><p style="font-size:15px">${esc(L.why)}</p></div>`;
+    }
+    root.innerHTML=`<div class="ply">
+      <div class="top"><span class="brand">ЛОТ №${st.i+1} / ${st.n}</span><span class="spacer"></span>${L.double?'<span class="tag x2">×2</span>':''}</div>
+      ${scorebar()}
+      <article class="lot"><div class="head">${tags(L)}</div>${lotBody(L,rev)}</article>
+      ${action}${warn}
+    </div>`;
+    root.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{draft.v=b.dataset.v;if(!draft.stake)draft.stake=100;sendBet();render();});
+    root.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{draft.stake=+b.dataset.s;sendBet();render();});
+  }
+  render(); if(me.name) connect();
+}
+
+if(JOIN) player(JOIN.replace(/[^a-z0-9-]/gi,'').slice(0,40)); else host();
+</script>
+</body>
+</html>
